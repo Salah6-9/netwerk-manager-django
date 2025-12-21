@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block home %}
+<h1>hi u are in home   page</h1>
+<h2>hellow salah </h2>
+<h3>welcom to django world</h3>
+<h4>------------------------</h4>
+<h5>-------------------</h5>
+<h6>the path is open for you </h6> 
+
+{% if name01 == 'salah eddine' %}  
+    <p>yes you are right salah </p>
+{% else %}
+    <p>no you are wrong </p>
+{% endif %}
+
+{% if    name02 == 'mohamed' %}
+    <p>yes you are right mohamed </p>
+{% elif name02 == 'ALI'  %}
+         <p>yes you are right ALI </p>
+    {% else %}
+         <p>who are you </p> 
+{% endif %}
+
+
+{% for contex in name01 %}
+    <p>{{ contex }}</p>
+{%endfor%}
+
+{% endblock home %}

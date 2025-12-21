@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{% for  x in clnt %}
+<h1>{{x.name}}</h1>
+<p>{{x.email}}</p>
+<p>{{x.devicenumber}}</p>
+<p>{{x.post}}</p>
+<p>{{x.macaddress}}</p>
+<p>{{x.ipaddress}}</p>
+<p>{{x.active}}</p>
+<hr>
+
+{% endfor %}
+
+{% endblock content  %}

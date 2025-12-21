@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+
+{% block about %}
+<h1>hi u are in contact page</h1>
+<h2>hellow salah </h2>
+<h3>welcom to django world</h3>
+<h4>------------------------</h4>
+<h5>-------------------</h5>
+<h6>----------------</h6>
+<form method="Post">
+    {% csrf_token %}
+  <!-- 
+    <input type="text" name="name" placeholder="Enter your name"> <br>
+    <input type="email" name="email" placeholder="Enter your email"> <br>
+    <input type="text" name="subject" placeholder="Enter your subject"> <br>
+    <textarea name="message" placeholder="Enter your message"></textarea> <br>  
+  --> 
+
+    {{form}}
+    <button type="submit">Send</button>
+
+</form>
+
+{% endblock about %}
+
