@@ -6,7 +6,38 @@
 <body>
 
 <h1>Network Dashboard</h1>
-<p>Monitoring system ready.</p>
+
+<h2>Last Scan</h2>
+
+{% if last_scan %}
+    <ul>
+        <li>Status: <strong>{{ last_scan.status }}</strong></li>
+        <li>Started at: {{ last_scan.started_at }}</li>
+        <li>
+            Finished at:
+            {% if last_scan.finished_at %}
+                {{ last_scan.finished_at }}
+            {% else %}
+                In progress
+            {% endif %}
+        </li>
+    </ul>
+{% else %}
+    <p>No scans yet.</p>
+{% endif %}
+
+<hr>
+<h2>Statistics</h2>
+<ul>
+    <li>Hosts discovered: {{ last_scan.hosts_discovered }}</li>
+    <li>Devices created: {{ last_scan.devices_created }}</li>
+    <li>Devices updated: {{ last_scan.devices_updated }}</li>
+    <li>Devices offline: {{ last_scan.devices_offline }}</li>
+</ul>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Scan Now</button>
+</form>
 
 </body>
 </html>

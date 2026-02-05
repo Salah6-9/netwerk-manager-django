@@ -5,12 +5,11 @@ import shlex
 import subprocess
 import logging
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
 from devices.models import Device
-from monitoring.models import ScanLog
+from monitoring.models import ScanLog, ScanRun
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,10 @@ LOCK_FILE = "/tmp/network_scan.lock"
 # ==========================================================
 # Regex patterns for parsing nmap output
 # ==========================================================
-HOST_RE = re.compile(r"^Nmap scan report for\s+(\d+\.\d+\.\d+\.\d+)", re.MULTILINE)
+HOST_RE = re.compile(
+    r"^Nmap scan report for\s+(\d+\.\d+\.\d+\.\d+)",
+    re.MULTILINE
+)
 MAC_RE = re.compile(r"MAC Address:\s*([0-9A-Fa-f:]{17})")
 
 
@@ -30,10 +32,7 @@ MAC_RE = re.compile(r"MAC Address:\s*([0-9A-Fa-f:]{17})")
 # Lock helpers
 # ==========================================================
 def acquire_lock():
-    """
-    Acquire scan lock.
-    Returns False if a scan is already running.
-    """
+    """Acquire scan lock. Return False if already running."""
     if os.path.exists(LOCK_FILE):
         return False
 
@@ -44,9 +43,7 @@ def acquire_lock():
 
 
 def release_lock():
-    """
-    Release scan lock if exists.
-    """
+    """Release scan lock if exists."""
     if os.path.exists(LOCK_FILE):
         os.remove(LOCK_FILE)
 
@@ -55,9 +52,7 @@ def release_lock():
 # Nmap execution
 # ==========================================================
 def run_nmap_scan(network_range, use_sudo=False, timeout=240):
-    """
-    Execute nmap ARP scan and return raw output.
-    """
+    """Execute nmap ARP scan and return raw output."""
     cmd = f"nmap -sn -PR {shlex.quote(network_range)}"
     if use_sudo:
         cmd = "sudo " + cmd
@@ -76,9 +71,7 @@ def run_nmap_scan(network_range, use_sudo=False, timeout=240):
 # Nmap output parsing
 # ==========================================================
 def parse_nmap_output(output):
-    """
-    Parse nmap output and return list of (ip, mac).
-    """
+    """Parse nmap output and return list of (ip, mac)."""
     discovered = []
     current_ip = None
 
@@ -106,23 +99,28 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
     """
     Perform full network scan:
     - Acquire lock
+    - Create ScanRun
     - Run nmap
-    - Parse results
-    - Update database
-    - Create scan logs
+    - Update devices
+    - Create ScanLogs per device
+    - Update ScanRun status
     """
 
     # 🔐 Acquire lock
     if not acquire_lock():
-        logger.warning("Network scan already running. New scan aborted.")
+        logger.warning("Network scan already running.")
         return {
             "status": "locked",
             "message": "Scan already running",
         }
 
+    # 🧾 Create ScanRun
+    scan_run = ScanRun.objects.create(
+        status="running",
+    )
     try:
         logger.info(
-            "Starting network scan: range=%s triggered_by=%s",
+            "Starting network scan: %s (triggered_by=%s)",
             network_range,
             triggered_by,
         )
@@ -135,36 +133,52 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
         updated = 0
 
         with transaction.atomic():
-            known_devices = {d.mac.lower(): d for d in Device.objects.exclude(mac__isnull=True)}
+            known_devices = {
+                d.mac.lower(): d
+                for d in Device.objects.exclude(mac__isnull=True)
+            }
             seen_macs = []
 
             for ip, mac in discovered:
-                if mac:
-                    seen_macs.append(mac)
-                    if mac in known_devices:
-                        device = known_devices[mac]
-                        device.ip = ip
-                        device.status = "online"
-                        device.last_seen = timezone.now()
-                        device.save(update_fields=["ip", "status", "last_seen"])
-                        updated += 1
-                    else:
-                        Device.objects.create(
-                            ip=ip,
-                            mac=mac,
-                            status="unknown",
-                            last_seen=timezone.now(),
-                        )
-                        created += 1
+                if not mac:
+                    continue
 
-            offline_marked = Device.objects.exclude(mac__in=seen_macs).update(status="offline")
+                seen_macs.append(mac)
 
-            for device in Device.objects.filter(mac__in=seen_macs):
+                if mac in known_devices:
+                    device = known_devices[mac]
+                    device.ip = ip
+                    device.status = "online"
+                    device.last_seen = timezone.now()
+                    device.save(update_fields=["ip", "status", "last_seen"])
+                    updated += 1
+                else:
+                    device = Device.objects.create(
+                        ip=ip,
+                        mac=mac,
+                        status="unknown",
+                        last_seen=timezone.now(),
+                    )
+                    created += 1
+
+                # ✅ Create ScanLog PER DEVICE
                 ScanLog.objects.create(
                     device=device,
                     status=device.status,
                 )
 
+            offline_marked = Device.objects.exclude(
+                mac__in=seen_macs
+            ).update(status="offline")
+
+        # ✅ Mark scan as completed
+        scan_run.status = "completed"
+        scan_run.finished_at = timezone.now()
+        scan_run.hosts_discovered = hosts_discovered
+        scan_run.devices_created = created
+        scan_run.devices_updated = updated
+        scan_run.devices_offline = offline_marked
+        scan_run.save()
         return {
             "hosts_discovered": hosts_discovered,
             "created": created,
@@ -172,8 +186,14 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
             "offline_marked": offline_marked,
         }
 
+    except Exception:
+        # ❌ Mark scan as failed
+        scan_run.status = "failed"
+        scan_run.finished_at = timezone.now()
+        scan_run.save()
+        raise
+
     finally:
         # 🔓 Always release lock
         release_lock()
         logger.info("Network scan lock released")
-
