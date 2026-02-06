@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 # File-based lock configuration
 # ==========================================================
 LOCK_FILE = "/tmp/network_scan.lock"
+LOCK_TIMEOUT = 300  # 5 minutes
+
 
 # ==========================================================
 # Regex patterns for parsing nmap output
@@ -34,7 +36,28 @@ MAC_RE = re.compile(r"MAC Address:\s*([0-9A-Fa-f:]{17})")
 def acquire_lock():
     """Acquire scan lock. Return False if already running."""
     if os.path.exists(LOCK_FILE):
-        return False
+        # Check for stale lock
+        try:
+            with open(LOCK_FILE, "r") as f:
+                timestamp = float(f.read().strip())
+                
+            if time.time() - timestamp > LOCK_TIMEOUT:
+                logger.warning("Found stale scan lock (age > %ds). Removing it.", LOCK_TIMEOUT)
+                try:
+                    os.remove(LOCK_FILE)
+                except OSError:
+                    # Could have been removed by another process
+                    pass
+            else:
+                return False
+        except (ValueError, OSError):
+            # If we can't read the file, assume it's corrupted/stale and try to remove it
+             logger.warning("Found corrupted scan lock. Removing it.")
+             try:
+                os.remove(LOCK_FILE)
+             except OSError:
+                pass
+
 
     with open(LOCK_FILE, "w") as f:
         f.write(str(time.time()))
@@ -114,10 +137,17 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
             "message": "Scan already running",
         }
 
-    # 🧾 Create ScanRun
-    scan_run = ScanRun.objects.create(
+    # Create ScanRun
+    ScanRun.objects.filter(
         status="running",
+        finished_at__isnull=True
+    ).update(
+        status="failed",
+        finished_at=timezone.now()
     )
+
+    #  Create ScanRun (واحد فقط)
+    scan_run = ScanRun.objects.create(status="running")
     try:
         logger.info(
             "Starting network scan: %s (triggered_by=%s)",
