@@ -1,9 +1,9 @@
 from django.urls import path
-from . import views
+from .views import dashboard
+from .import views
+
 
 urlpatterns = [
-    path('', views.home, name='home'),  # Root URL mapped to index view
-    path('about', views.aboutme, name='aboutme'),  # /about/ URL mapped to about view
-    path('contact', views.contact, name='contact'),  # /contact/ URL mapped to contact view
-
+    path("dashboard/", dashboard, name="dashboard"),
+    path("trigger-scan/", views.trigger_scan, name="trigger_scan"),
 ]

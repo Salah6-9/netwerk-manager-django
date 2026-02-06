@@ -1,25 +1,35 @@
-from django.shortcuts import render
-from . models import Contact
-from .forms import ContactForm
-#from django.http import HttpResponse
-# Create your views here.
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 
-def home(request):
-    context = { 'name01': 'SOOL', 'name02': 'ALI' }
-    return render(request, 'pages/home.html', context)
+from monitoring.models import ScanRun
+from monitoring.scanner.nmap_scanner import scan_network
 
-def aboutme(request):
-    return render(request, 'pages/about.html')
+@login_required
+def trigger_scan(request):
+    if request.method == "POST":
+        scan_network(
+            network_range="192.168.1.0/24",
+            triggered_by="dashboard", )
+    return redirect("dashboard")
 
-def contact(request):
-    if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return render(request, 'pages/contact.html', {'form': ContactForm(), 'success': True})
-    else:
-        form = ContactForm()
-    return render(request, 'pages/contact.html', {'form': form})
 
-    
- 
+@login_required
+def dashboard(request):
+    latest_scan = (
+    ScanRun.objects.filter(status="completed")
+    .order_by("-finished_at")
+    .first()
+)
+    scan_running = ScanRun.objects.filter(
+     status="running",
+     finished_at__isnull=True
+    ).exists()
+
+    return render(
+        request,
+        "dashboard.html",
+        {
+            "latest_scan": latest_scan,
+            "scan_running": scan_running,
+        },
+    )
