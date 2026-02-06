@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
+import os
 from monitoring.models import ScanRun
-from monitoring.scanner.nmap_scanner import scan_network
+from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
 
 @login_required
 def trigger_scan(request):
@@ -20,10 +21,13 @@ def dashboard(request):
     .order_by("-finished_at")
     .first()
 )
+    # Cleanup any stalled runs before rendering
+    cleanup_stalled_scans()
+
     scan_running = ScanRun.objects.filter(
      status="running",
      finished_at__isnull=True
-    ).exists()
+    ).exists() or os.path.exists(LOCK_FILE)
 
     return render(
         request,

@@ -116,6 +116,23 @@ def parse_nmap_output(output):
 
 
 # ==========================================================
+# Cleanup stalled scans
+# ==========================================================
+def cleanup_stalled_scans():
+    """Mark scans that are stuck in 'running' status as 'failed'."""
+    updated_count = ScanRun.objects.filter(
+        status="running",
+        finished_at__isnull=True
+    ).update(
+        status="failed",
+        finished_at=timezone.now()
+    )
+    if updated_count > 0:
+        logger.info("Cleaned up %d stalled scan runs.", updated_count)
+    return updated_count
+
+
+# ==========================================================
 # Main scanner entry point
 # ==========================================================
 def scan_network(network_range, use_sudo=False, triggered_by="manual"):
@@ -129,7 +146,7 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
     - Update ScanRun status
     """
 
-    # 🔐 Acquire lock
+    # Acquire lock
     if not acquire_lock():
         logger.warning("Network scan already running.")
         return {
@@ -137,14 +154,8 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
             "message": "Scan already running",
         }
 
-    # Create ScanRun
-    ScanRun.objects.filter(
-        status="running",
-        finished_at__isnull=True
-    ).update(
-        status="failed",
-        finished_at=timezone.now()
-    )
+    # Cleanup any stalled runs before starting
+    cleanup_stalled_scans()
 
     #  Create ScanRun (واحد فقط)
     scan_run = ScanRun.objects.create(status="running")
@@ -191,7 +202,7 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
                     )
                     created += 1
 
-                # ✅ Create ScanLog PER DEVICE
+                # Create ScanLog PER DEVICE
                 ScanLog.objects.create(
                     device=device,
                     status=device.status,
@@ -201,7 +212,7 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
                 mac__in=seen_macs
             ).update(status="offline")
 
-        # ✅ Mark scan as completed
+        # Mark scan as completed
         scan_run.status = "completed"
         scan_run.finished_at = timezone.now()
         scan_run.hosts_discovered = hosts_discovered
@@ -217,13 +228,13 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
         }
 
     except Exception:
-        # ❌ Mark scan as failed
+        # Mark scan as failed
         scan_run.status = "failed"
         scan_run.finished_at = timezone.now()
         scan_run.save()
         raise
 
     finally:
-        # 🔓 Always release lock
+        #  Always release lock
         release_lock()
         logger.info("Network scan lock released")
