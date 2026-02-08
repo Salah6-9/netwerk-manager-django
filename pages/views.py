@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 
 import os
 from monitoring.models import ScanRun
@@ -37,3 +38,43 @@ def dashboard(request):
             "scan_running": scan_running,
         },
     )
+
+
+ 
+LOCK_FILE = "/tmp/network_scan.lock"
+def dashboard_status_api(request):
+    """
+    Read-only API endpoint.
+    Returns current dashboard scan status as JSON.
+    """
+
+    #Get latest scan
+    latest_scan = ScanRun.objects.order_by("-started_at").first()
+
+    # Determine if scan is running
+    scan_running = False
+
+    if latest_scan and latest_scan.status == "running":
+        scan_running = True
+
+    if os.path.exists(LOCK_FILE):
+        scan_running = True
+
+    #  Prepare response payload
+    data = {
+        "scan_running": scan_running,
+        "latest_scan": None,
+    }
+
+    if latest_scan:
+        data["latest_scan"] = {
+            "status": latest_scan.status,
+            "started_at": latest_scan.started_at,
+            "finished_at": latest_scan.finished_at,
+            "hosts_discovered": latest_scan.hosts_discovered,
+            "devices_created": latest_scan.devices_created,
+            "devices_updated": latest_scan.devices_updated,
+            "devices_offline": latest_scan.devices_offline,
+        }
+
+    return JsonResponse(data)
