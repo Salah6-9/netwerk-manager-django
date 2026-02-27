@@ -15,11 +15,27 @@ class ScanRun(models.Model):
         ("completed", "Completed"),
         ("failed", "Failed"),
     ]
-
+    TRIGGER_CHOICES = [
+        ("manual", "Manual"),
+        ("cron", "Cron"),
+        ("api", "API"),
+    ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="running")
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 
+    initiated_by = models.ForeignKey(
+        "auth.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    triggered_by=models.CharField(
+        max_length=20,
+        choices=TRIGGER_CHOICES,
+        default="manual"
+    )
+    network_range = models.CharField(max_length=50)
     hosts_discovered = models.IntegerField(default=0)
     devices_created = models.IntegerField(default=0)
     devices_updated = models.IntegerField(default=0)
