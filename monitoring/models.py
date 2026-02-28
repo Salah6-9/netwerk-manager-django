@@ -2,7 +2,15 @@ from django.db import models
 from devices.models import Device
 
 class ScanLog(models.Model):
-    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name="scan_logs")
+    device = models.ForeignKey(
+        Device, on_delete=models.CASCADE,
+        related_name="scan_logs"
+    )
+    scan_run = models.ForeignKey(
+        "ScanRun", on_delete=models.CASCADE, 
+        related_name="logs"
+    )
+    
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default="offline")
 

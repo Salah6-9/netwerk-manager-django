@@ -158,7 +158,11 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
     cleanup_stalled_scans()
 
     #  Create ScanRun (واحد فقط)
-    scan_run = ScanRun.objects.create(status="running")
+    scan_run = ScanRun.objects.create(
+        status="running",
+        network_range=network_range,
+        triggered_by=triggered_by,
+    )
     try:
         logger.info(
             "Starting network scan: %s (triggered_by=%s)",
@@ -206,6 +210,7 @@ def scan_network(network_range, use_sudo=False, triggered_by="manual"):
                 ScanLog.objects.create(
                     device=device,
                     status=device.status,
+                    scan_run = scan_run,
                 )
 
             offline_marked = Device.objects.exclude(
