@@ -10,7 +10,7 @@ class ScanLog(models.Model):
         "ScanRun", on_delete=models.CASCADE, 
         related_name="logs"
     )
-    
+
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default="offline")
 
@@ -18,6 +18,7 @@ class ScanLog(models.Model):
         return f"{self.device.mac} - {self.status} @ {self.timestamp}"
 
 class ScanRun(models.Model):
+
     STATUS_CHOICES = [
         ("running", "Running"),
         ("completed", "Completed"),
@@ -51,3 +52,24 @@ class ScanRun(models.Model):
 
     def __str__(self):
         return f"ScanRun #{self.id} ({self.status})"
+
+
+class SystemConfig(models.Model):
+    default_network_range = models.CharField(
+        max_length=50,
+        default ="192.168.1.0/24"
+    )
+    def __str__(self):
+        return "System Configuration"
+    class Meta:
+        verbose_name = "System Configuration"
+        verbose_name_plural = "System Configurations"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(SystemConfig, self).save(*args, **kwargs)
+    @classmethod
+    def load_config(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+        

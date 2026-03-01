@@ -10,26 +10,21 @@ from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans,
 def trigger_scan(request):
     if request.method == "POST":
         scan_network(
-            network_range="192.168.1.0/24",
-            triggered_by="dashboard", )
+            network_range=None,
+            triggered_by="manual", )
     return redirect("dashboard")
 
 
 @login_required
 def dashboard(request):
-    latest_scan = (
-    ScanRun.objects.filter(status="completed")
-    .order_by("-finished_at")
-    .first()
-)
+    latest_scan = ScanRun.objects.order_by("-started_at").first()
     # Cleanup any stalled runs before rendering
     cleanup_stalled_scans()
 
     scan_running = ScanRun.objects.filter(
-     status="running",
-     finished_at__isnull=True
-    ).exists() or os.path.exists(LOCK_FILE)
-
+        status="running",
+        finished_at__isnull=True
+    ).exists() 
     return render(
         request,
         "dashboard.html",
@@ -57,9 +52,10 @@ def dashboard_status_api(request):
     if latest_scan and latest_scan.status == "running":
         scan_running = True
 
-    if os.path.exists(LOCK_FILE):
-        scan_running = True
-
+    scan_running = ScanRun.objects.filter(
+        status="running",
+        finished_at__isnull=True
+    ).exists()
     #  Prepare response payload
     data = {
         "scan_running": scan_running,
