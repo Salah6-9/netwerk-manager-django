@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pages.apps.PagesConfig',  # Custom app for handling pages
-    'client.apps.ClientConfig',  # Custom app for handling client data
     'users.apps.UsersConfig',  # Custom app for user management
     'devices.apps.DevicesConfig',  # Custom app for device management
     'notifications.apps.NotificationsConfig',  # Custom app for notifications

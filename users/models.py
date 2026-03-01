@@ -46,6 +46,11 @@ class Profile(models.Model):
         default="employee"
     )
     
+    full_name = models.CharField(max_length=150, blank=True)
+    phone = models.CharField(max_length=20 , blank = True)
+    position = models.CharField(max_length=100, blank=True)
+    image = models.ImageField(upload_to="profiles/", blank=True, null=True)
+
     def __str__(self):
         return f"{self.user.username} ({self.role})"
 
