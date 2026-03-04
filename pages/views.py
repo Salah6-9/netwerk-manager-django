@@ -1,17 +1,29 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-
+from django.http import HttpResponseForbidden,HttpResponseNotAllowed
 import os
 from monitoring.models import ScanRun
 from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
 
+def is_admin(user):
+    return user.groups.filter(name="admin").exists()
+
 @login_required
 def trigger_scan(request):
-    if request.method == "POST":
-        scan_network(
-            network_range=None,
-            triggered_by="manual", )
+    
+    #allow only post
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    
+    #allow only admin
+    if not is_admin(request.user):
+        return HttpResponseForbidden("You are not authorized to perform this action")
+    
+    
+    scan_network(
+        network_range=None,
+        triggered_by="manual", )
     return redirect("dashboard")
 
 
@@ -25,14 +37,14 @@ def dashboard(request):
         status="running",
         finished_at__isnull=True
     ).exists() 
-    return render(
-        request,
-        "dashboard.html",
-        {
-            "latest_scan": latest_scan,
-            "scan_running": scan_running,
-        },
-    )
+    context={
+        "latest_scan": latest_scan,
+        "scan_running": scan_running,
+    }
+    if request.user.groups.filter(name="admin").exists():
+        return render(request, "dashboard_admin.html", context)
+    else:
+        return render(request, "dashboard_employee.html", context)
 
 
  

@@ -32,27 +32,19 @@ class Office(models.Model):
         return f"{self.department.name} - {self.name}"
 
 class Profile(models.Model):
-    ROLE_CHOICES = [
-        ("admin", "Admin"),
-        ("employee", "Employee"),
-    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     office = models.ForeignKey(
         "Office", on_delete=models.SET_NULL,
         blank=True, null=True
     )
-    role = models.CharField(
-        max_length=20, choices=ROLE_CHOICES, 
-        default="employee"
-    )
-    
     full_name = models.CharField(max_length=150, blank=True)
     phone = models.CharField(max_length=20 , blank = True)
     position = models.CharField(max_length=100, blank=True)
     image = models.ImageField(upload_to="profiles/", blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} ({self.role})"
+        return f"Profile: {self.user.username}"
 
 
 

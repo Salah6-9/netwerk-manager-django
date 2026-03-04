@@ -1,0 +1,9 @@
+<h1>Employee Dashboard</h1>
+
+<p>Welcome {{ request.user.username }}</p>
+
+<p>This dashboard is restricted.</p>
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>
