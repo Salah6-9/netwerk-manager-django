@@ -7,3 +7,7 @@
     {% csrf_token %}
     <button type="submit">Logout</button>
 </form>
+
+{% for device in devices %}
+{{ device.mac }}<br>
+{% endfor %}

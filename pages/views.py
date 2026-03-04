@@ -5,7 +5,7 @@ from django.http import HttpResponseForbidden,HttpResponseNotAllowed
 import os
 from monitoring.models import ScanRun
 from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
-
+from devices.models import Device
 def is_admin(user):
     return user.groups.filter(name="admin").exists()
 
@@ -29,24 +29,31 @@ def trigger_scan(request):
 
 @login_required
 def dashboard(request):
-    latest_scan = ScanRun.objects.order_by("-started_at").first()
-    # Cleanup any stalled runs before rendering
     cleanup_stalled_scans()
 
-    scan_running = ScanRun.objects.filter(
-        status="running",
-        finished_at__isnull=True
-    ).exists() 
-    context={
+    admin = request.user.groups.filter(name="Admin").exists()
+
+    if admin:
+        latest_scan = ScanRun.objects.order_by("-started_at").first()
+        scan_running = ScanRun.objects.filter(
+            status="running",
+            finished_at__isnull=True
+        ).exists()
+        devices = Device.objects.all()
+        template = "dashboard_admin.html"
+    else:
+        latest_scan = None
+        scan_running = False
+        devices = Device.objects.filter(user=request.user)
+        template = "dashboard_employee.html"
+
+    context = {
         "latest_scan": latest_scan,
         "scan_running": scan_running,
+        "devices": devices,
     }
-    if request.user.groups.filter(name="admin").exists():
-        return render(request, "dashboard_admin.html", context)
-    else:
-        return render(request, "dashboard_employee.html", context)
 
-
+    return render(request, template, context)
  
 LOCK_FILE = "/tmp/network_scan.lock"
 def dashboard_status_api(request):
