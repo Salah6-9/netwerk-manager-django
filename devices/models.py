@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import secrets
 
 class Device(models.Model):
     STATUS_CHOICES = [
@@ -27,6 +28,15 @@ class Device(models.Model):
     )
     device_number = models.CharField(max_length=100, blank=True)
     is_active = models.BooleanField(default=True)
+    agent_token = models.CharField(
+        max_length=128, blank=True,
+        null=True, unique=True
+    )
+    def save(self, *args, **kwargs):
+        if not self.agent_token:
+            self.agent_token = secrets.token_hex(32)
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         if self.user:
             return f"{self.user.username} - {self.mac}"
