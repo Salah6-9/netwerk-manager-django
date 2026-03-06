@@ -1,5 +1,6 @@
 from django.db import models
 from devices.models import Device
+from django.utils import timezone
 
 class ScanLog(models.Model):
     device = models.ForeignKey(
@@ -53,7 +54,6 @@ class ScanRun(models.Model):
     def __str__(self):
         return f"ScanRun #{self.id} ({self.status})"
 
-
 class SystemConfig(models.Model):
     default_network_range = models.CharField(
         max_length=50,
@@ -72,4 +72,92 @@ class SystemConfig(models.Model):
     def load_config(cls):
         obj, created = cls.objects.get_or_create(pk=1)
         return obj
-        
+
+class DeviceStatus(models.Model):
+    """
+    Real-time status of a device (latest metrics).
+    Only one row per device.
+    """
+    device = models.OneToOneField(
+        "devices.Device",
+        on_delete=models.CASCADE,
+        related_name="Status"
+    )
+
+    cpu_usage = models.FloatField()
+    ram_usage = models.FloatField()
+    disk_usage = models.FloatField()
+
+    network_in = models.FloatField()
+    network_out = models.FloatField()
+
+    cpu_temperature = models.FloatField(null=True, blank=True)
+
+    uptime = models.IntegerField(help_text="System uptime in seconds")
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Status for {self.device}"
+
+
+class DeviceMetric(models.Model):
+    """
+    Historical performance metrics of a device.
+    """
+    device = models.ForeignKey(
+        "devices.Device",
+        on_delete=models.CASCADE,
+        related_name="metrics"
+    )
+
+    cpu_usage = models.FloatField()
+    ram_usage = models.FloatField()
+    disk_usage = models.FloatField()
+
+    network_in = models.FloatField()
+    network_out = models.FloatField()
+
+    cpu_temperature = models.FloatField(null=True, blank=True)
+
+    uptime = models.IntegerField(help_text="System uptime in seconds")
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
+        indexes = [
+            models.Index(fields=["device", "-timestamp"])
+        ]
+
+    def __str__(self):
+        return f"{self.device} @ {self.timestamp}"
+
+
+class MonitoringConfig(models.Model):
+    """
+    Singleton model storing monitoring thresholds and agent configuration.
+    """
+
+    cpu_threshold = models.IntegerField(default=90)
+    ram_threshold = models.IntegerField(default=95)
+    disk_threshold = models.IntegerField(default=90)
+
+    temperature_threshold = models.IntegerField(default=85)
+
+    agent_interval = models.IntegerField(
+        default=60,
+        help_text="Agent reporting interval (seconds)"
+    )
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Monitoring Configuration"
