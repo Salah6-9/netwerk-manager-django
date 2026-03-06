@@ -7,12 +7,26 @@ class Device(models.Model):
         ("offline", "Offline"),
         ("unknown", "Unknown"),
     ]
-
-    user = models.ForeignKey(User, null= True,on_delete=models.CASCADE, related_name="devices")
+    office = models.ForeignKey(
+        "users.Office",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True
+    )
+    user = models.ForeignKey(
+        User, null= True,blank=True,
+        on_delete=models.SET_NULL, 
+        related_name="devices"
+    )
     ip = models.GenericIPAddressField()
-    mac = models.CharField(max_length=100, unique=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="offline")
-
+    mac = models.CharField(
+        max_length=100, unique=True
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="offline"
+    )
+    device_number = models.CharField(max_length=100, blank=True)
+    is_active = models.BooleanField(default=True)
     def __str__(self):
         if self.user:
             return f"{self.user.username} - {self.mac}"

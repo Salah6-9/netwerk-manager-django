@@ -1,45 +1,59 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-
+from django.http import HttpResponseForbidden,HttpResponseNotAllowed
 import os
 from monitoring.models import ScanRun
 from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
+from devices.models import Device
+def is_admin(user):
+    return user.groups.filter(name="admin").exists()
 
 @login_required
 def trigger_scan(request):
-    if request.method == "POST":
-        scan_network(
-            network_range="192.168.1.0/24",
-            triggered_by="dashboard", )
+    
+    #allow only post
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    
+    #allow only admin
+    if not is_admin(request.user):
+        return HttpResponseForbidden("You are not authorized to perform this action")
+    
+    
+    scan_network(
+        network_range=None,
+        triggered_by="manual", )
     return redirect("dashboard")
 
 
 @login_required
 def dashboard(request):
-    latest_scan = (
-    ScanRun.objects.filter(status="completed")
-    .order_by("-finished_at")
-    .first()
-)
-    # Cleanup any stalled runs before rendering
     cleanup_stalled_scans()
 
-    scan_running = ScanRun.objects.filter(
-     status="running",
-     finished_at__isnull=True
-    ).exists() or os.path.exists(LOCK_FILE)
+    admin = request.user.groups.filter(name="Admin").exists()
 
-    return render(
-        request,
-        "dashboard.html",
-        {
-            "latest_scan": latest_scan,
-            "scan_running": scan_running,
-        },
-    )
+    if admin:
+        latest_scan = ScanRun.objects.order_by("-started_at").first()
+        scan_running = ScanRun.objects.filter(
+            status="running",
+            finished_at__isnull=True
+        ).exists()
+        devices = Device.objects.all()
+        template = "dashboard_admin.html"
+    else:
+        latest_scan = None
+        scan_running = False
+        devices = Device.objects.filter(user=request.user)
+        template = "dashboard_employee.html"
 
+    context = {
+        "latest_scan": latest_scan,
+        "scan_running": scan_running,
+        "devices": devices,
+    }
 
+    return render(request, template, context)
  
 LOCK_FILE = "/tmp/network_scan.lock"
 def dashboard_status_api(request):
@@ -57,9 +71,10 @@ def dashboard_status_api(request):
     if latest_scan and latest_scan.status == "running":
         scan_running = True
 
-    if os.path.exists(LOCK_FILE):
-        scan_running = True
-
+    scan_running = ScanRun.objects.filter(
+        status="running",
+        finished_at__isnull=True
+    ).exists()
     #  Prepare response payload
     data = {
         "scan_running": scan_running,

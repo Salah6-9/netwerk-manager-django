@@ -7,6 +7,14 @@
 
 <body>
 
+    {% for device in devices %}
+    {{ device.mac }}<br>
+    {% endfor %}
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
     <h1>Network Dashboard</h1>
 
     <h2>Last Scan</h2>
