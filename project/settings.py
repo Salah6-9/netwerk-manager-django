@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'devices.apps.DevicesConfig',  # Custom app for device management
     'notifications.apps.NotificationsConfig',  # Custom app for notifications
     'monitoring.apps.MonitoringConfig',  # Custom app for monitoring
+    "rest_framework",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
