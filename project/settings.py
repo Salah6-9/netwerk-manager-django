@@ -38,10 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pages.apps.PagesConfig',  # Custom app for handling pages
+    'client.apps.ClientConfig',  # Custom app for handling client data
     'users.apps.UsersConfig',  # Custom app for user management
     'devices.apps.DevicesConfig',  # Custom app for device management
     'notifications.apps.NotificationsConfig',  # Custom app for notifications
     'monitoring.apps.MonitoringConfig',  # Custom app for monitoring
+    "rest_framework",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,7 +61,6 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')    ],  # Global templates directory
-        'DIRS':[BASE_DIR/'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -131,7 +132,3 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-LOGIN_REDIRECT_URL = "/dashboard/"
-LOGOUT_REDIRECT_URL = "/accounts/login/"
-LOGIN_URL = "/accounts/login/"
