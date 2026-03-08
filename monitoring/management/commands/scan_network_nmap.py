@@ -7,6 +7,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
+            "--range",
+            required=True,
+            help="Network range to scan (e.g. 192.168.56.0/24)"
+        )
+        parser.add_argument(
             "--sudo",
             action="store_true",
             help="Run nmap with sudo"
@@ -14,8 +19,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         result = scan_network(
+            network_range=options["range"],
             use_sudo=options["sudo"],
-            triggered_by="cron"
+            triggered_by="manual"
         )
 
         self.stdout.write(
