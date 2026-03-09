@@ -1,5 +1,0 @@
-{
-    "agent_token": "fe906dccac6b8d2a92ffcf210cebfa5c53804255317c4b256431afbcb215ef2a",
-    "api_url": "http://127.0.0.1:8000/api/metrics/",
-    "interval": 60
-}
