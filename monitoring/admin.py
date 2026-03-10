@@ -85,14 +85,27 @@ class MonitoringConfigAdmin(admin.ModelAdmin):
 
 @admin.register(DeviceEnrollmentRequest)
 class DeviceEnrollmentRequestAdmin(admin.ModelAdmin):
+
     list_display = (
-        "user",
-        "mac",
-        "ip",
         "hostname",
-        "os",
+        "ip",
+        "mac",
         "status",
         "created_at",
     )
+
     list_filter = ("status",)
-    ordering = ("-created_at",)
+
+    search_fields = ("hostname", "ip", "mac")
+
+    fields = (
+        "hostname",
+        "ip",
+        "mac",
+        "os",
+        "agent_version",
+        "status",
+        "created_at",
+    )
+
+    readonly_fields = ("created_at",)
