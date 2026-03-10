@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from devices.models import Device
 from monitoring.models import DeviceMetric, DeviceStatus, DeviceEnrollmentRequest
@@ -56,6 +58,9 @@ class MetricsIngestView(APIView):
 
 class DeviceEnrollmentView(APIView):
 
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
 
         mac = request.data.get("mac")
@@ -73,7 +78,16 @@ class DeviceEnrollmentView(APIView):
 
             if enrollment.status == "approved":
 
-                device = Device.objects.get(mac=mac)
+                device = Device.objects.filter(mac=mac).first()
+
+                if not device:
+                    # device was deleted but enrollment exists
+                    enrollment.status = "pending"
+                    enrollment.save()
+
+                    return Response({
+                        "status": "pending"
+                    })
 
                 return Response({
                     "status": "approved",
@@ -86,7 +100,7 @@ class DeviceEnrollmentView(APIView):
 
         # create new request
         enrollment = DeviceEnrollmentRequest.objects.create(
-            user=None,
+            user=request.user,   
             mac=mac,
             ip=request.data.get("ip"),
             hostname=request.data.get("hostname"),
