@@ -176,7 +176,7 @@ class DeviceEnrollmentRequest(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    mac = models.CharField(max_length=17)
+    mac = models.CharField(max_length=17, unique=True)
     ip = models.GenericIPAddressField()
 
     hostname = models.CharField(max_length=100)
@@ -190,3 +190,5 @@ class DeviceEnrollmentRequest(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.hostname} ({self.mac})"  
