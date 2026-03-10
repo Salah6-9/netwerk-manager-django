@@ -6,6 +6,7 @@ from .models import (
     DeviceStatus,
     DeviceMetric,
     MonitoringConfig,
+    DeviceEnrollmentRequest,
 )
 
 
@@ -81,3 +82,17 @@ class MonitoringConfigAdmin(admin.ModelAdmin):
         "temperature_threshold",
         "agent_interval",
     )
+
+@admin.register(DeviceEnrollmentRequest)
+class DeviceEnrollmentRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "mac",
+        "ip",
+        "hostname",
+        "os",
+        "status",
+        "created_at",
+    )
+    list_filter = ("status",)
+    ordering = ("-created_at",)

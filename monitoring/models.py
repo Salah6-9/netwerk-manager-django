@@ -1,6 +1,9 @@
 from django.db import models
 from devices.models import Device
 from django.utils import timezone
+from django.conf import settings
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class ScanLog(models.Model):
     device = models.ForeignKey(
@@ -161,3 +164,29 @@ class MonitoringConfig(models.Model):
 
     def __str__(self):
         return "Monitoring Configuration"
+
+
+class DeviceEnrollmentRequest(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    mac = models.CharField(max_length=17)
+    ip = models.GenericIPAddressField()
+
+    hostname = models.CharField(max_length=100)
+    os = models.CharField(max_length=50)
+    agent_version = models.CharField(max_length=20)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
