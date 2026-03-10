@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from devices.models import Device
-from monitoring.models import DeviceMetric, DeviceStatus
+from monitoring.models import DeviceMetric, DeviceStatus, DeviceEnrollmentRequest
 
 from .serializers import MetricsSerializer
 
@@ -53,3 +53,47 @@ class MetricsIngestView(APIView):
         )
 
         return Response({"status": "ok"})
+
+class DeviceEnrollmentView(APIView):
+
+    def post(self, request):
+
+        mac = request.data.get("mac")
+
+        if not mac:
+            return Response(
+                {"error": "MAC address required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # check existing enrollment
+        enrollment = DeviceEnrollmentRequest.objects.filter(mac=mac).first()
+
+        if enrollment:
+
+            if enrollment.status == "approved":
+
+                device = Device.objects.get(mac=mac)
+
+                return Response({
+                    "status": "approved",
+                    "agent_token": device.agent_token
+                })
+
+            return Response({
+                "status": enrollment.status
+            })
+
+        # create new request
+        enrollment = DeviceEnrollmentRequest.objects.create(
+            user=None,
+            mac=mac,
+            ip=request.data.get("ip"),
+            hostname=request.data.get("hostname"),
+            os=request.data.get("os"),
+            agent_version=request.data.get("agent_version"),
+        )
+
+        return Response({
+            "status": "pending"
+        })

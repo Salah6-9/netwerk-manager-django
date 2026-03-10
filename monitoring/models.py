@@ -174,7 +174,11 @@ class DeviceEnrollmentRequest(models.Model):
         ("rejected", "Rejected"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        null =True,
+        blank =True    
+    )
 
     mac = models.CharField(max_length=17, unique=True)
     ip = models.GenericIPAddressField()
