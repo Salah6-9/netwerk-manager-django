@@ -1,6 +1,9 @@
 import psutil
 import os
 import time
+import socket
+import platform
+import uuid
 
 
 def collect_metrics():
@@ -30,4 +33,22 @@ def collect_metrics():
         "network_out": net.bytes_sent,
         "cpu_temperature": temp,
         "uptime": uptime,
+    }
+
+def collect_device_info():
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(socket.gethostname())
+    mac = ":".join([
+        f"{(uuid.getnode() >> ele) & 0xff:02x}"
+        for ele in range(40, -1, -8)
+    ])
+
+    os_name = platform.system()
+    agent_version = "1.0"
+    return {
+        "hostname": hostname,
+        "ip": ip,
+        "mac": mac,
+        "os": os_name,
+        "agent_version": agent_version,
     }

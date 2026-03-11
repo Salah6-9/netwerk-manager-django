@@ -20,5 +20,6 @@ staticfiles/
 # OS
 .DS_Store
 
+
 # agent
 agent/config.json

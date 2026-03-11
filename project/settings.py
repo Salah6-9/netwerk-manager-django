@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',  # Custom app for notifications
     'monitoring.apps.MonitoringConfig',  # Custom app for monitoring
     "rest_framework",
+    "rest_framework.authtoken",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
