@@ -1,26 +1,21 @@
-{% load static %}
-<link rel="stylesheet" href = "{% static 'css/test.css' %}">
+<!DOCTYPE html>
+<html>
 
- 
+<head>
+    <title>Network Manager</title>
+</head>
 
+<body>
 
-{% include 'pages/parts/navbar.html' %}
-{% block home %}
+<header>
+    Network Manager
+</header>
 
-{% endblock home %}
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
 
-{% block about %}
+</body>
 
-{% endblock about %}
-
-{% block contact %}
-
-{% endblock contact %}
-
-{% block content %}
-
-{% endblock content %}
-
-
-
-{% include 'pages/parts/footer.html' %}
+</html>
