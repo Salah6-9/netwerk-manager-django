@@ -3,11 +3,52 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.http import HttpResponseForbidden,HttpResponseNotAllowed
 import os
-from monitoring.models import ScanRun
+from monitoring.models import ScanRun ,DeviceEnrollmentRequest , ScanLog
+from django.contrib.auth.decorators import user_passes_test
 from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
 from devices.models import Device
+
+
 def is_admin(user):
     return user.is_superuser or user.groups.filter(name="Admin").exists()
+## display requests
+@login_required
+@user_passes_test(is_admin)
+def enrollment_requests(request):
+
+    enrollments = DeviceEnrollmentRequest.objects.all().order_by("-created_at")
+
+    pending = DeviceEnrollmentRequest.objects.filter(status="pending").count()
+    approved = DeviceEnrollmentRequest.objects.filter(status="approved").count()
+    rejected = DeviceEnrollmentRequest.objects.filter(status="rejected").count()
+
+    context = {
+        "enrollments": enrollments,
+        "pending": pending,
+        "approved": approved,
+        "rejected": rejected,
+    }
+
+    return render(request, "admin/enrollments.html", context)
+# approve request
+@login_required
+@user_passes_test(is_admin)
+def approve_enrollment(request, pk):
+    enroolment = DeviceEnrollmentRequest.objects.get(id=pk)
+    enroolment.status = "approved"
+    enroolment.save()
+    return redirect("enrollment_requests")
+
+# rejrequest 
+@login_required
+@user_passes_test(is_admin)
+def reject_enrollment(request, pk):
+    enroolment = DeviceEnrollmentRequest.objects.get(id=request_id)
+    enroolment.status = "rejected"
+    enroolment.save()
+    return redirect("enrollment_requests")
+
+
 
 @login_required
 def trigger_scan(request):
@@ -29,32 +70,51 @@ def trigger_scan(request):
 
 @login_required
 def dashboard(request):
+
     cleanup_stalled_scans()
 
     admin = request.user.groups.filter(name="Admin").exists()
 
+    latest_scan = ScanRun.objects.order_by("-started_at").first()
+    total_devices = Device.objects.count()
+    total_online_devices = Device.objects.filter(status="online").count()
+    total_offline_devices = Device.objects.filter(status="offline").count()
+    total_unknown_devices = Device.objects.filter(status="unknown").count()
+    discovered_devices = []
+
+    if latest_scan:
+        discovered_devices = ScanLog.objects.filter(scan_run=latest_scan)
+
     if admin:
-        latest_scan = ScanRun.objects.order_by("-started_at").first()
+
         scan_running = ScanRun.objects.filter(
             status="running",
             finished_at__isnull=True
         ).exists()
+
         devices = Device.objects.all()
-        template = "dashboard_admin.html"
+
+        template = "admin/dashboard.html"
+
     else:
-        latest_scan = None
+
         scan_running = False
         devices = Device.objects.filter(user=request.user)
-        template = "dashboard_employee.html"
+        template = "employee/dashboard.html"
 
     context = {
         "latest_scan": latest_scan,
         "scan_running": scan_running,
         "devices": devices,
+        "discovered_devices": discovered_devices,
+        "total_devices": total_devices,
+        "total_online_devices": total_online_devices,
+        "total_offline_devices": total_offline_devices,
+        "total_unknown_devices": total_unknown_devices,
     }
 
     return render(request, template, context)
- 
+
 LOCK_FILE = "/tmp/network_scan.lock"
 def dashboard_status_api(request):
     """

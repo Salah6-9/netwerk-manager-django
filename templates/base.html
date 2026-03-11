@@ -2,19 +2,67 @@
 <html>
 
 <head>
-    <title>Network Manager</title>
+    <title>NetWerk Manager</title>
 </head>
 
 <body>
 
-<header>
-    Network Manager
-</header>
+    <header>
 
-<main>
-    {% block content %}
-    {% endblock %}
-</main>
+        <h2>NetWerk Manager</h2>
+
+        <div>
+
+            Logged in as {{ request.user }}
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+
+        </div>
+
+    </header>
+
+    <hr>
+
+    <div style="display:flex">
+
+        <!-- Sidebar -->
+        <aside style="width:250px">
+
+            <h3>Navigation</h3>
+
+            <ul>
+
+                <li><a href="/dashboard/">Dashboard</a></li>
+
+                {% if request.user.is_staff %}
+
+                <li><a href="/devices/">Devices</a></li>
+
+                <li><a href="/enrollments/">Enrollment Requests</a></li>
+
+                {% else %}
+
+                <li><a href="/setup-agent/">Setup Agent</a></li>
+
+                {% endif %}
+
+            </ul>
+
+        </aside>
+
+        <!-- Main Content -->
+
+        <main style="padding:20px; flex:1">
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+    </div>
 
 </body>
 

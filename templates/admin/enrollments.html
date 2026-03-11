@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Device Enrollment Requests</h1>
+
+<div>
+    <strong>Pending:</strong> {{ pending }} |
+    <strong>Approved:</strong> {{ approved }} |
+    <strong>Rejected:</strong> {{ rejected }}
+</div>
+
+<br>
+
+<table border="1">
+
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Hostname</th>
+            <th>IP</th>
+            <th>MAC</th>
+            <th>OS</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for e in enrollments %}
+
+        <tr>
+
+            <td>{{ e.user }}</td>
+            <td>{{ e.hostname }}</td>
+            <td>{{ e.ip }}</td>
+            <td>{{ e.mac }}</td>
+            <td>{{ e.os }}</td>
+
+            <td>
+
+                {% if e.status == "pending" %}
+                <span style="color:orange">Pending</span>
+                {% elif e.status == "approved" %}
+                <span style="color:green">Approved</span>
+                {% else %}
+                <span style="color:red">Rejected</span>
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if e.status == "pending" %}
+
+                <a href="{% url 'approve_enrollment' e.id %}">
+                    Approve
+                </a>
+
+                |
+
+                <a href="{% url 'reject_enrollment' e.id %}">
+                    Reject
+                </a>
+
+                {% else %}
+                -
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}
