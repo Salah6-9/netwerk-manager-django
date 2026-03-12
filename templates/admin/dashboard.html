@@ -4,7 +4,10 @@
 
 <h1>Network Dashboard</h1>
 
-<h2>Network Overview</h2>
+<!-- ============================= -->
+<!-- Network Overview -->
+<!-- ============================= -->
+
 <h2>Network Overview</h2>
 
 <table border="1" cellpadding="10">
@@ -12,7 +15,7 @@
         <th>Total Devices</th>
         <th>Online</th>
         <th>Offline</th>
-        <th>Discovered (Last Scan)</th>
+        <th>Unknown</th>
     </tr>
 
     <tr>
@@ -21,10 +24,13 @@
         <td>{{ total_offline_devices }}</td>
         <td>{{ total_unknown_devices }}</td>
     </tr>
-
 </table>
 
 <hr>
+
+<!-- ============================= -->
+<!-- Registered Devices -->
+<!-- ============================= -->
 
 <h2>Registered Devices</h2>
 
@@ -32,6 +38,7 @@
 
     <tr>
         <th>User</th>
+        <th>Hostname</th>
         <th>IP</th>
         <th>MAC</th>
         <th>Status</th>
@@ -41,6 +48,7 @@
 
     <tr>
         <td>{{ device.user }}</td>
+        <td>{{ device.hostname }}</td>
         <td>{{ device.ip }}</td>
         <td>{{ device.mac }}</td>
         <td>{{ device.status }}</td>
@@ -49,12 +57,19 @@
     {% empty %}
 
     <tr>
-        <td colspan="4">No registered devices.</td>
+        <td colspan="5">No registered devices.</td>
     </tr>
 
     {% endfor %}
 
 </table>
+
+<hr>
+
+<!-- ============================= -->
+<!-- Discovered Devices -->
+<!-- ============================= -->
+
 <h2>Discovered Devices (Last Scan)</h2>
 
 <table border="1" cellpadding="5">
@@ -71,7 +86,6 @@
     <tr>
 
         <td>{{ host.ip }}</td>
-
         <td>{{ host.mac }}</td>
 
         <td>
@@ -96,17 +110,26 @@
 
 </table>
 
+<hr>
+
+<!-- ============================= -->
+<!-- Last Scan -->
+<!-- ============================= -->
+
 <h2>Last Network Scan</h2>
 
 {% if latest_scan %}
 
 <p id="scan-timer" class="{% if not scan_running or latest_scan.status != 'running' %}d-none{% endif %}"
     style="color: green; font-weight: bold;">
-    Running for: <span id="timer-value">00:00:00</span>
+    Running for:
+    <span id="timer-value">00:00:00</span>
 </p>
 
 <ul>
-    <li>Status:
+
+    <li>
+        Status:
         <strong id="scan-status">
             {{ latest_scan.status }}
         </strong>
@@ -129,28 +152,35 @@
             {% endif %}
         </span>
     </li>
+
 </ul>
 
 <hr>
 
-<h2>Statistics</h2>
+<h3>Scan Statistics</h3>
 
 <ul>
-    <li>Hosts discovered:
+
+    <li>
+        Hosts discovered:
         <span id="hosts">{{ latest_scan.hosts_discovered }}</span>
     </li>
 
-    <li>Devices created:
+    <li>
+        Devices created:
         <span id="created">{{ latest_scan.devices_created }}</span>
     </li>
 
-    <li>Devices updated:
+    <li>
+        Devices updated:
         <span id="updated">{{ latest_scan.devices_updated }}</span>
     </li>
 
-    <li>Devices offline:
+    <li>
+        Devices offline:
         <span id="offline">{{ latest_scan.devices_offline }}</span>
     </li>
+
 </ul>
 
 {% else %}
@@ -161,16 +191,23 @@
 
 <hr>
 
+<!-- ============================= -->
+<!-- Scan Button -->
+<!-- ============================= -->
+
 <form method="post" action="{% url 'trigger_scan' %}">
     {% csrf_token %}
 
     <button id="scan-btn" type="submit" {% if scan_running %}disabled{% endif %}>
+
         {% if scan_running %}
         Scan in progress...
         {% else %}
         Scan Now
         {% endif %}
+
     </button>
+
 </form>
 
 <p id="scan-warning" style="color: orange;" class="{% if not scan_running %}d-none{% endif %}">
@@ -211,7 +248,9 @@
     function updateDashboard() {
 
         fetch("/api/dashboard/status/")
+
             .then(response => response.json())
+
             .then(data => {
 
                 const scanBtn = document.getElementById("scan-btn");
@@ -225,11 +264,15 @@
                     warning.style.display = "block";
 
                     if (data.latest_scan && data.latest_scan.status === "running") {
+
                         timerGroup.style.display = "block";
                         currentScanStartTime = new Date(data.latest_scan.started_at);
+
                     } else {
+
                         timerGroup.style.display = "none";
                         currentScanStartTime = null;
+
                     }
 
                 } else {
@@ -250,9 +293,10 @@
                     formatDateTime(data.latest_scan.started_at);
 
                 document.getElementById("scan-finished").innerText =
-                    data.latest_scan.finished_at
-                        ? formatDateTime(data.latest_scan.finished_at)
-                        : "In progress";
+                    data.latest_scan.finished_at ?
+                        formatDateTime(data.latest_scan.finished_at)
+                        :
+                        "In progress";
 
                 document.getElementById("hosts").innerText =
                     data.latest_scan.hosts_discovered;
@@ -267,7 +311,9 @@
                     data.latest_scan.devices_offline;
 
             })
+
             .catch(err => console.error("Dashboard update failed:", err));
+
     }
 
     updateDashboard();
@@ -289,7 +335,9 @@
                 const s = String(diff % 60).padStart(2, "0");
 
                 timerValueEl.textContent = `${h}:${m}:${s}`;
+
             }
+
         }
 
     }, 1000);
