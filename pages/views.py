@@ -11,6 +11,10 @@ from devices.models import Device
 
 def is_admin(user):
     return user.is_superuser or user.groups.filter(name="Admin").exists()
+
+## admin functions --------------------------------------------------------------------
+# ___________________________________________________________________________________
+
 ## display requests
 @login_required
 @user_passes_test(is_admin)
@@ -30,6 +34,7 @@ def enrollment_requests(request):
     }
 
     return render(request, "admin/enrollments.html", context)
+
 # approve request
 @login_required
 @user_passes_test(is_admin)
@@ -43,7 +48,8 @@ def approve_enrollment(request, pk):
     enrollment.save()
 
     return redirect("enrollments")
-# rejrequest 
+
+# reject request
 @login_required
 @user_passes_test(is_admin)
 def reject_enrollment(request, pk):
@@ -75,6 +81,29 @@ def delete_enrollment(request, pk):
 
     return redirect("enrollments")
 
+#Device functions --------------------------------------------------------------------
+@login_required
+@user_passes_test(is_admin)
+def devices_list(request):
+   devices = Device.objects.select_related("user").all().order_by("-id")
+   total_devices = Device.objects.count()
+   online_devices = Device.objects.filter(status="online").count()
+   offline_devices = Device.objects.filter(status="offline").count()
+   unknown_devices = Device.objects.filter(status="unknown").count()
+
+   context = {
+       "devices": devices,
+       "total_devices": total_devices,
+       "online_devices": online_devices,
+       "offline_devices": offline_devices,
+       "unknown_devices": unknown_devices,
+   }
+
+   return render(request, "admin/devices.html", context)
+
+# ------------------------------------------------------------------------------------------
+
+# trigger scan
 @login_required
 def trigger_scan(request):
     

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Devices</h1>
+
+<hr>
+
+<h3>Network Overview</h3>
+
+<div>
+    Total Devices: {{ total_devices }} |
+    Online: {{ online_devices }} |
+    Offline: {{ offline_devices }}
+</div>
+
+<br>
+
+<table border="1">
+
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>IP</th>
+            <th>MAC</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for device in devices %}
+
+        <tr>
+
+            <td>{{ device.user }}</td>
+
+            <td>{{ device.ip }}</td>
+
+            <td>{{ device.mac }}</td>
+
+            <td>
+
+                {% if device.status == "online" %}
+                <span style="color:green">Online</span>
+                {% else %}
+                <span style="color:red">Offline</span>
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                <a href="#">View</a>
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="5">No devices found.</td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}
