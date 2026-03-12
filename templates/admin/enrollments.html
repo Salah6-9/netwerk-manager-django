@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Device Enrollment Requests</h1>
+
+<div style="margin-bottom:10px">
+
+    <span style="color:orange">Pending: {{ pending }}</span> |
+
+    <span style="color:green">Approved: {{ approved }}</span> |
+
+    <span style="color:red">Rejected: {{ rejected }}</span>
+
+</div>
+
+<table border="1">
+
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Hostname</th>
+            <th>IP</th>
+            <th>MAC</th>
+            <th>OS</th>
+            <th>Created At</th>
+            <th>Status</th>
+            <th>Actions</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for e in enrollments %}
+
+        <tr>
+
+            <td>{{ e.user.username }}</td>
+            <td>{{ e.hostname }}</td>
+            <td>{{ e.ip }}</td>
+            <td>{{ e.mac|default:"—" }}</td>
+            <td>{{ e.os }}</td>
+            <td>{{ e.created_at }}</td>
+
+            <td>
+
+                {% if e.status == "pending" %}
+                <span style="color:orange">Pending</span>
+
+                {% elif e.status == "approved" %}
+                <span style="color:green">Approved</span>
+
+                {% else %}
+                <span style="color:red">Rejected</span>
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if e.status == "pending" %}
+
+                <form method="post" action="{% url 'approve_enrollment' e.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Approve</button>
+                </form>
+
+                <form method="post" action="{% url 'reject_enrollment' e.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Reject</button>
+                </form>
+
+                {% else %}
+                <form method="post" action="{% url 'delete_enrollment' e.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+                {% endif %}
+
+            </td>
+            <td>
+
+
+            </td>
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="7">No enrollment requests.</td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

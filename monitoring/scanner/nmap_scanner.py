@@ -203,36 +203,36 @@ def scan_network(network_range=None, use_sudo=False, triggered_by="manual"):
             seen_macs = []
 
             for ip, mac in discovered:
-                if not mac:
-                    continue
+            
+                device = None
 
-                seen_macs.append(mac)
+                if mac:
+                    seen_macs.append(mac)
 
-                if mac in known_devices:
-                    device = known_devices[mac]
-                    device.ip = ip
-                    device.status = "online"
-                    device.last_seen = timezone.now()
-                    device.save(update_fields=["ip", "status", "last_seen"])
-                    updated += 1
-                else:
-                    device = Device.objects.create(
-                        ip=ip,
-                        mac=mac,
-                        status="unknown",
-                        last_seen=timezone.now(),
-                    )
-                    created += 1
+                    if mac in known_devices:
+                        device = known_devices[mac]
+                        device.ip = ip
+                        device.status = "online"
+                        device.last_seen = timezone.now()
+                        device.save(update_fields=["ip", "status", "last_seen"])
+                        updated += 1
+                    else:
+                        device = Device.objects.create(
+                            ip=ip,
+                            mac=mac,
+                            status="unknown",
+                            last_seen=timezone.now(),
+                        )
+                        created += 1
 
                 ScanLog.objects.create(
-                    device=device,
-                    status=device.status,
                     scan_run=scan_run,
+                    device=device,
+                    ip=ip,
+                    mac=mac,
+                    status="online",
                 )
-
-            offline_marked = Device.objects.exclude(
-                mac__in=seen_macs
-            ).update(status="offline")
+            offline_marked = Device.objects.exclude(mac__in=seen_macs).exclude(mac__isnull=True).update(status="offline")
 
         # 6️⃣ Mark completed
         scan_run.status = "completed"

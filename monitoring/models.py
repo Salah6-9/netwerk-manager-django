@@ -6,20 +6,30 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class ScanLog(models.Model):
-    device = models.ForeignKey(
-        Device, on_delete=models.CASCADE,
-        related_name="scan_logs"
-    )
+
     scan_run = models.ForeignKey(
-        "ScanRun", on_delete=models.CASCADE, 
+        "ScanRun",
+        on_delete=models.CASCADE,
         related_name="logs"
     )
 
+    device = models.ForeignKey(
+        Device,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="scan_logs"
+    )
+
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    mac = models.CharField(max_length=100, unique=True, null=True, blank=True)
+
     timestamp = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, default="offline")
+
+    status = models.CharField(max_length=20, default="online")
 
     def __str__(self):
-        return f"{self.device.mac} - {self.status} @ {self.timestamp}"
+        return f"{self.mac} - {self.status}"
 
 class ScanRun(models.Model):
 
