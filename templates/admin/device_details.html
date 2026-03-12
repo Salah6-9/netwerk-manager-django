@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Device Detail</h1>
+
+<h3>Device Information</h3>
+
+<ul>
+
+    <li><b>User:</b> {{ device.user }}</li>
+
+    <li><b>Hostname:</b> {{ device.hostname }}</li>
+
+    <li><b>OS:</b> {{ device.os }}</li>
+
+    <li><b>IP:</b> {{ device.ip }}</li>
+
+    <li><b>MAC:</b> {{ device.mac }}</li>
+
+    <li><b>Status:</b> {{ device.status }}</li>
+
+    <li><b>Office:</b> {{ device.office }}</li>
+    <li><b>Last Seen:</b> {{ device.last_seen }}</li>
+
+</ul>
+
+<hr>
+
+<h3>Agent Authentication</h3>
+
+<div style="background:#f5f5f5;padding:15px;border:1px solid #ccc;width:fit-content">
+
+    <p>
+        Agent Token:
+        <code id="agent-token">{{ device.agent_token }}</code>
+        <button onclick="copyAgentToken()">Copy</button>
+    </p>
+
+    <p>
+        User Token:
+        <code id="user-token">{{ user_token }}</code>
+        <button onclick="copyUserToken()">Copy</button>
+    </p>
+
+</div>
+
+<hr>
+
+<h3>Current Metrics</h3>
+
+{% if status %}
+
+<ul>
+
+    <li>CPU Usage: {{ status.cpu_usage }} %</li>
+
+    <li>RAM Usage: {{ status.ram_usage }} %</li>
+
+    <li>Disk Usage: {{ status.disk_usage }} %</li>
+
+    <li>Temperature: {{ status.cpu_temp }}</li>
+
+    <li>Network In: {{ status.network_in }}</li>
+
+    <li>Network Out: {{ status.network_out }}</li>
+
+</ul>
+
+{% else %}
+
+<p>No metrics available.</p>
+
+{% endif %}
+
+<hr>
+
+<h3>Metrics History</h3>
+
+<table border="1" cellpadding="5">
+
+    <tr>
+        <th>CPU</th>
+        <th>RAM</th>
+        <th>Disk</th>
+        <th>Temp</th>
+        <th>Time</th>
+    </tr>
+
+    {% for m in metrics %}
+
+    <tr>
+
+        <td>{{ m.cpu_usage }}</td>
+
+        <td>{{ m.ram_usage }}</td>
+
+        <td>{{ m.disk_usage }}</td>
+
+        <td>{{ m.cpu_temp }}</td>
+
+        <td>{{ m.timestamp }}</td>
+
+    </tr>
+
+    {% empty %}
+
+    <tr>
+        <td colspan="5">No metrics recorded.</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<script>
+
+    function copyUserToken() {
+
+        const token = document.getElementById("user-token").innerText;
+
+        navigator.clipboard.writeText(token);
+
+        alert("User token copied");
+
+    }
+
+    function copyAgentToken() {
+
+        const token = document.getElementById("agent-token").innerText;
+
+        navigator.clipboard.writeText(token);
+
+        alert("Agent token copied");
+
+    }
+
+</script>
+
+{% endblock %}

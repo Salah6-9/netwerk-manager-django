@@ -32,6 +32,8 @@ class Device(models.Model):
         max_length=128, blank=True,
         null=True, unique=True
     )
+    hostname = models.CharField(max_length=255, blank=True, null=True)
+    os = models.CharField(max_length=50, blank=True, null=True)
     def save(self, *args, **kwargs):
         if not self.agent_token:
             self.agent_token = secrets.token_hex(32)

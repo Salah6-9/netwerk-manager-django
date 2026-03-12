@@ -1,16 +1,24 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect , get_object_or_404
-from django.http import JsonResponse
-from django.http import HttpResponseForbidden,HttpResponseNotAllowed
-import os
-from monitoring.models import ScanRun ,DeviceEnrollmentRequest , ScanLog
 from django.contrib.auth.decorators import user_passes_test
+from django.http import HttpResponseForbidden,HttpResponseNotAllowed
+from rest_framework.authtoken.models import Token 
+from django.shortcuts import render, redirect , get_object_or_404
+from monitoring.models import ScanRun ,DeviceEnrollmentRequest , ScanLog, DeviceMetric , DeviceStatus
 from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
-from devices.models import Device
+from devices.models import Device 
+from users.models import Department
+
+import os
+from django.http import JsonResponse
+
 
 
 def is_admin(user):
     return user.is_superuser or user.groups.filter(name="Admin").exists()
+
+## admin functions --------------------------------------------------------------------
+# ___________________________________________________________________________________
+
 ## display requests
 @login_required
 @user_passes_test(is_admin)
@@ -30,6 +38,7 @@ def enrollment_requests(request):
     }
 
     return render(request, "admin/enrollments.html", context)
+
 # approve request
 @login_required
 @user_passes_test(is_admin)
@@ -43,7 +52,8 @@ def approve_enrollment(request, pk):
     enrollment.save()
 
     return redirect("enrollments")
-# rejrequest 
+
+# reject request
 @login_required
 @user_passes_test(is_admin)
 def reject_enrollment(request, pk):
@@ -75,6 +85,56 @@ def delete_enrollment(request, pk):
 
     return redirect("enrollments")
 
+#Device functions --------------------------------------------------------------------
+@login_required
+@user_passes_test(is_admin)
+def devices_list(request):
+
+    departments = Department.objects.all()
+
+    devices = Device.objects.select_related(
+        "office",
+        "user"
+    )
+
+    context = {
+        "departments": departments,
+        "devices": devices
+    }
+
+    return render(request, "admin/devices.html", context)
+
+#device details
+@login_required
+@user_passes_test(is_admin)
+def device_details(request, pk):
+    device = get_object_or_404(Device, id=pk)
+    status = DeviceMetric.objects.filter(device=device).first()
+    metrics = DeviceMetric.objects.filter(device=device).order_by("-timestamp")[:20]
+    user_token = Token.objects.get(user=device.user)
+    last_seen = ScanLog.objects.filter(device=device).order_by("-timestamp").first()
+    context = {
+        "device": device,
+        "status": status,
+        "metrics": metrics,
+        "user_token" : user_token.key,
+        "last_seen" : last_seen.last_seen
+    }
+    return render(request, "admin/device_details.html", context)
+# ------------------------------------------------------------------------------------------
+
+## Employee functions --------------------------------------------------------------------
+@login_required
+#@user_passes_test(is_admin)
+def setup_agent(request):
+     user_token = Token.objects.get(user=request.user)
+     context = {
+         "user_token" : user_token.key
+     }
+     return render(request, "employee/setup_agent.html", context)
+
+
+# trigger scan
 @login_required
 def trigger_scan(request):
     
@@ -125,6 +185,18 @@ def dashboard(request):
 
         scan_running = False
         devices = Device.objects.filter(user=request.user)
+        device_status = []
+        for device in devices:
+            status =  DeviceStatus.objects.filter(device=device).first()
+            device_status.append(
+                {
+                    "device": device,
+                    "status": status,
+                }
+            )
+        context = {
+            "device_status": device_status,
+        }
         template = "employee/dashboard.html"
 
     context = {

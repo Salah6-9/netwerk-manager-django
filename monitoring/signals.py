@@ -24,4 +24,6 @@ def handle_enrollment_approval(sender, instance, created, **kwargs):
         user=instance.user,
         agent_token=token,
         is_active=True,
+        hostname=instance.hostname,
+        os=instance.os,
     )

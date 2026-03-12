@@ -1,13 +1,91 @@
-<h1>Employee Dashboard</h1>
+{% extends "base.html" %}
 
-<p>Welcome {{ request.user.username }}</p>
+{% block content %}
 
-<p>This dashboard is restricted.</p>
-<form method="post" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button type="submit">Logout</button>
-</form>
+<h1>My Dashboard</h1>
 
-{% for device in devices %}
-{{ device.mac }}<br>
-{% endfor %}
+<h2>My Devices</h2>
+
+<table border="1" cellpadding="5">
+
+    <tr>
+        <th>Hostname</th>
+        <th>OS</th>
+        <th>IP</th>
+        <th>Status</th>
+        <th>CPU</th>
+        <th>RAM</th>
+        <th>Disk</th>
+        <th>Last Update</th>
+    </tr>
+
+    {% for item in devices %}
+
+    <tr>
+
+        <td>{{ item.device.hostname }}</td>
+
+        <td>{{ item.device.os }}</td>
+
+        <td>{{ item.device.ip }}</td>
+
+        <td>
+
+            {% if item.device.status == "online" %}
+            <span style="color:green">● Online</span>
+
+            {% elif item.device.status == "offline" %}
+            <span style="color:red">● Offline</span>
+
+            {% else %}
+            <span style="color:gray">● Unknown</span>
+
+            {% endif %}
+
+        </td>
+
+        <td>
+            {% if item.status %}
+            {{ item.status.cpu_usage }} %
+            {% else %}
+            -
+            {% endif %}
+        </td>
+
+        <td>
+            {% if item.status %}
+            {{ item.status.ram_usage }} %
+            {% else %}
+            -
+            {% endif %}
+        </td>
+
+        <td>
+            {% if item.status %}
+            {{ item.status.disk_usage }} %
+            {% else %}
+            -
+            {% endif %}
+        </td>
+
+        <td>
+            {% if item.status %}
+            {{ item.status.last_update }}
+            {% else %}
+            -
+            {% endif %}
+        </td>
+
+    </tr>
+
+    {% empty %}
+
+    <tr>
+        <td colspan="8">No devices registered.</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

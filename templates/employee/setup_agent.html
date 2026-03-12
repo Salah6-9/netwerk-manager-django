@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Setup Monitoring Agent</h1>
+
+<p>
+    This page allows you to connect your computer to the monitoring system.
+</p>
+
+<hr>
+
+<h2>Your User Token</h2>
+
+<div style="background:#f5f5f5;padding:10px;border:1px solid #ccc;width:fit-content">
+
+    <code id="user-token">{{ user_token}}</code>
+
+    <button onclick="copyToken()">Copy</button>
+
+</div>
+
+<p>
+    You will need this token to register your device.
+</p>
+
+<hr>
+
+<h2>Install the Agent</h2>
+
+<ol>
+
+    <li>Download the monitoring agent</li>
+
+    <li>Extract the archive</li>
+
+    <li>Open terminal inside the folder</li>
+
+    <li>Run the registration command</li>
+
+</ol>
+
+<pre>
+python -m monitoring_agent.main --register
+</pre>
+
+<p>
+    When prompted paste your token.
+</p>
+
+<hr>
+
+<h2>Download Agent</h2>
+
+<a href="/static/image/01.png">
+    <button>Download Agent</button>
+</a>
+
+<hr>
+
+<h2>What Happens Next?</h2>
+
+<ul>
+
+    <li>The agent sends an enrollment request</li>
+
+    <li>The administrator approves the device</li>
+
+    <li>The agent receives an agent_token</li>
+
+    <li>The device starts sending metrics automatically</li>
+
+</ul>
+
+<script>
+
+    function copyToken() {
+
+        const token = document.getElementById("user-token").innerText;
+
+        navigator.clipboard.writeText(token);
+
+        alert("Token copied to clipboard");
+
+    }
+
+</script>
+
+{% endblock %}

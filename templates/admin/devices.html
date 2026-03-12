@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Devices</h1>
+
+<hr>
+
+{% for dept in departments %}
+
+<h2>{{ dept.name }}</h2>
+
+<table border="1" width="100%">
+
+    <thead>
+        <tr>
+            <th>Hostname</th>
+            <th>User</th>
+            <th>IP</th>
+            <th>MAC</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for device in devices %}
+
+        {% if device.office.department == dept %}
+
+        <tr>
+
+            <td>{{ device.hostname }}</td>
+            <td>{{ device.user }}</td>
+            <td>{{ device.ip }}</td>
+            <td>{{ device.mac }}</td>
+
+            <td>
+
+                {% if device.status == "online" %}
+                <span style="color:green">● Online</span>
+                {% elif device.status == "offline" %}
+                <span style="color:red">● Offline</span>
+                {% else %}
+                <span style="color:gray">● Unknown</span>
+                {% endif %}
+
+            </td>
+
+            <td>
+                <a href="{% url 'device_details' device.id %}">View</a>
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+<br>
+
+{% endfor %}
+
+{% endblock %}
