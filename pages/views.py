@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect , get_object_or_404
 from django.http import JsonResponse
 from django.http import HttpResponseForbidden,HttpResponseNotAllowed
 import os
@@ -34,21 +34,46 @@ def enrollment_requests(request):
 @login_required
 @user_passes_test(is_admin)
 def approve_enrollment(request, pk):
-    enroolment = DeviceEnrollmentRequest.objects.get(id=pk)
-    enroolment.status = "approved"
-    enroolment.save()
-    return redirect("enrollment_requests")
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
 
+    enrollment = get_object_or_404(DeviceEnrollmentRequest, id=pk)
+
+    enrollment.status = "approved"
+    enrollment.save()
+
+    return redirect("enrollments")
 # rejrequest 
 @login_required
 @user_passes_test(is_admin)
 def reject_enrollment(request, pk):
-    enroolment = DeviceEnrollmentRequest.objects.get(id=request_id)
-    enroolment.status = "rejected"
-    enroolment.save()
-    return redirect("enrollment_requests")
 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
 
+    enrollment = get_object_or_404(DeviceEnrollmentRequest, id=pk)
+
+    enrollment.status = "rejected"
+    enrollment.save()
+
+    return redirect("enrollments")
+
+# Delete request
+@login_required
+@user_passes_test(is_admin)
+def delete_enrollment(request, pk):
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    enrollment = get_object_or_404(DeviceEnrollmentRequest, id=pk)
+
+    if enrollment.status == "pending" :
+        return redirect("enrollments")
+
+    enrollment.delete()
+
+    return redirect("enrollments")
 
 @login_required
 def trigger_scan(request):

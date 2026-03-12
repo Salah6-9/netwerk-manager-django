@@ -4,7 +4,8 @@ from .views import (
     dashboard_status_api,
     enrollment_requests,
     approve_enrollment,
-    reject_enrollment
+    reject_enrollment, 
+    delete_enrollment
 )
 from . import views
 
@@ -21,5 +22,7 @@ urlpatterns = [
     path("enrollments/<int:pk>/approve/", approve_enrollment, name="approve_enrollment"),
 
     path("enrollments/<int:pk>/reject/", reject_enrollment, name="reject_enrollment"),
+
+    path("enrollments/<int:pk>/delete/", delete_enrollment, name="delete_enrollment"),
 
 ]
