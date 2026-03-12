@@ -6,7 +6,9 @@ from .views import (
     approve_enrollment,
     reject_enrollment, 
     delete_enrollment,
-    devices_list
+    devices_list,
+    device_details,
+    setup_agent,
 )
 from . import views
 
@@ -25,6 +27,11 @@ urlpatterns = [
     path("enrollments/<int:pk>/reject/", reject_enrollment, name="reject_enrollment"),
 
     path("enrollments/<int:pk>/delete/", delete_enrollment, name="delete_enrollment"),
+
     path("devices/", devices_list, name="devices_list"),
+
+    path("devices/<int:pk>/", device_details, name="device_details"),
+
+    path("setup-agent/", setup_agent, name="setup_agent"),
 
 ]

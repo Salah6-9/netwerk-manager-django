@@ -6,20 +6,15 @@
 
 <hr>
 
-<h3>Network Overview</h3>
+{% for dept in departments %}
 
-<div>
-    Total Devices: {{ total_devices }} |
-    Online: {{ online_devices }} |
-    Offline: {{ offline_devices }}
-</div>
+<h2>{{ dept.name }}</h2>
 
-<br>
-
-<table border="1">
+<table border="1" width="100%">
 
     <thead>
         <tr>
+            <th>Hostname</th>
             <th>User</th>
             <th>IP</th>
             <th>MAC</th>
@@ -32,42 +27,43 @@
 
         {% for device in devices %}
 
+        {% if device.office.department == dept %}
+
         <tr>
 
+            <td>{{ device.hostname }}</td>
             <td>{{ device.user }}</td>
-
             <td>{{ device.ip }}</td>
-
             <td>{{ device.mac }}</td>
 
             <td>
 
                 {% if device.status == "online" %}
-                <span style="color:green">Online</span>
+                <span style="color:green">● Online</span>
+                {% elif device.status == "offline" %}
+                <span style="color:red">● Offline</span>
                 {% else %}
-                <span style="color:red">Offline</span>
+                <span style="color:gray">● Unknown</span>
                 {% endif %}
 
             </td>
 
             <td>
-
-                <a href="#">View</a>
-
+                <a href="{% url 'device_details' device.id %}">View</a>
             </td>
 
         </tr>
 
-        {% empty %}
-
-        <tr>
-            <td colspan="5">No devices found.</td>
-        </tr>
+        {% endif %}
 
         {% endfor %}
 
     </tbody>
 
 </table>
+
+<br>
+
+{% endfor %}
 
 {% endblock %}
