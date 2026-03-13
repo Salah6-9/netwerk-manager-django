@@ -7,6 +7,7 @@ from monitoring.models import ScanRun ,DeviceEnrollmentRequest , ScanLog, Device
 from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
 from devices.models import Device 
 from users.models import Department
+from notifications.models import Notification
 import json
 import os
 from django.http import JsonResponse
@@ -118,7 +119,10 @@ def device_details(request, pk):
     ram_data = [m.ram_usage or 0 for m in metrics]
     disk_data = [m.disk_usage or 0 for m in metrics]
     temp_data = [m.cpu_temperature or 0 for m in metrics]
-
+    alerts = Notification.objects.filter(
+        to_user=request.user,
+        type="system"
+    ).order_by("-created_at")[:10]
     context = {
         "device": device,
         "status": status,
@@ -129,6 +133,7 @@ def device_details(request, pk):
         "ram_data": json.dumps(ram_data),
         "disk_data": json.dumps(disk_data),
         "temp_data": json.dumps(temp_data),
+        "alerts": alerts,
     }
     return render(request, "admin/device_details.html", context)
 # ------------------------------------------------------------------------------------------
