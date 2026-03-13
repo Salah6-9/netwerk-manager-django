@@ -114,9 +114,10 @@ def device_details(request, pk):
     metrics = DeviceMetric.objects.filter(device=device).order_by("-timestamp")[:50]
     metrics = list(reversed(metrics))
     time_data = [m.timestamp.strftime("%H:%M:%S") for m in metrics]
-    cpu_data = [m.cpu_usage for m in metrics]
-    ram_data = [m.ram_usage for m in metrics]
-    disk_data = [m.disk_usage for m in metrics]
+    cpu_data = [m.cpu_usage or 0 for m in metrics]
+    ram_data = [m.ram_usage or 0 for m in metrics]
+    disk_data = [m.disk_usage or 0 for m in metrics]
+    temp_data = [m.cpu_temperature or 0 for m in metrics]
 
     context = {
         "device": device,
@@ -127,6 +128,7 @@ def device_details(request, pk):
         "cpu_data": json.dumps(cpu_data),
         "ram_data": json.dumps(ram_data),
         "disk_data": json.dumps(disk_data),
+        "temp_data": json.dumps(temp_data),
     }
     return render(request, "admin/device_details.html", context)
 # ------------------------------------------------------------------------------------------
