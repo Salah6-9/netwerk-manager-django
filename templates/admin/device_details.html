@@ -7,42 +7,21 @@
 <h3>Device Information</h3>
 
 <ul>
-
-    <li><b>User:</b> {{ device.user }}</li>
-
-    <li><b>Hostname:</b> {{ device.hostname }}</li>
-
-    <li><b>OS:</b> {{ device.os }}</li>
-
-    <li><b>IP:</b> {{ device.ip }}</li>
-
-    <li><b>MAC:</b> {{ device.mac }}</li>
-
-    <li><b>Status:</b> {{ device.status }}</li>
-
-    <li><b>Office:</b> {{ device.office }}</li>
+    <li>User: {{ device.user }}</li>
+    <li>OS: {{ device.os }}</li>
+    <li>Hostname: {{ device.hostname }}</li>
+    <li>IP: {{ device.ip }}</li>
+    <li>MAC: {{ device.mac }}</li>
+    <li>Status: {{ device.status }}</li>
+    <li>Office: {{ device.office }}</li>
+    <div style="background:#f5f5f5;padding:30px;border:1px solid #ccc;width:fit-content">
+        <li>Agent Token:<code id="agent-token">{{ device.agent_token }}</code></li>
+        <button onclick="copyAgentToken()">Copy</button>
+        <li>Token of User: <code id="user-token">{{ user_token}}</code></li>
+        <button onclick="copyUserToken()">Copy</button>
+    </div>
 
 </ul>
-
-<hr>
-
-<h3>Agent Authentication</h3>
-
-<div style="background:#f5f5f5;padding:15px;border:1px solid #ccc;width:fit-content">
-
-    <p>
-        Agent Token:
-        <code id="agent-token">{{ device.agent_token }}</code>
-        <button onclick="copyAgentToken()">Copy</button>
-    </p>
-
-    <p>
-        User Token:
-        <code id="user-token">{{ user_token }}</code>
-        <button onclick="copyUserToken()">Copy</button>
-    </p>
-
-</div>
 
 <hr>
 
@@ -51,19 +30,12 @@
 {% if status %}
 
 <ul>
-
     <li>CPU Usage: {{ status.cpu_usage }} %</li>
-
     <li>RAM Usage: {{ status.ram_usage }} %</li>
-
     <li>Disk Usage: {{ status.disk_usage }} %</li>
-
     <li>Temperature: {{ status.cpu_temp }}</li>
-
     <li>Network In: {{ status.network_in }}</li>
-
     <li>Network Out: {{ status.network_out }}</li>
-
 </ul>
 
 {% else %}
@@ -76,7 +48,7 @@
 
 <h3>Metrics History</h3>
 
-<table border="1" cellpadding="5">
+<table border="1">
 
     <tr>
         <th>CPU</th>
@@ -91,13 +63,9 @@
     <tr>
 
         <td>{{ m.cpu_usage }}</td>
-
         <td>{{ m.ram_usage }}</td>
-
         <td>{{ m.disk_usage }}</td>
-
         <td>{{ m.cpu_temp }}</td>
-
         <td>{{ m.timestamp }}</td>
 
     </tr>
@@ -111,16 +79,71 @@
     {% endfor %}
 
 </table>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<h3>CPU Usage</h3>
+<canvas id="cpuChart"></canvas>
+
+<h3>RAM Usage</h3>
+<canvas id="ramChart"></canvas>
+
+<h3>Disk Usage</h3>
+<canvas id="diskChart"></canvas>
+
+<h3>Temperature</h3>
+<canvas id="tempChart"></canvas>
 
 <script>
 
+    const timeData = {{ time_data| safe }};
+    const cpuData = {{ cpu_data| safe }};
+    const ramData = {{ ram_data| safe }};
+    const diskData = {{ disk_data| safe }};
+    const tempData = {{ temp_data| safe }};
+
+    function createChart(elementId, label, data, color) {
+
+        new Chart(document.getElementById(elementId), {
+
+            type: "line",
+
+            data: {
+                labels: timeData,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: color,
+                    fill: false
+                }]
+            },
+
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+
+        });
+
+    }
+
+    createChart("cpuChart", "CPU Usage %", cpuData, "red");
+    createChart("ramChart", "RAM Usage %", ramData, "blue");
+    createChart("diskChart", "Disk Usage %", diskData, "green");
+    createChart("tempChart", "Temperature", tempData, "orange");
+
+</script>
+
+<script>
     function copyUserToken() {
 
         const token = document.getElementById("user-token").innerText;
 
         navigator.clipboard.writeText(token);
 
-        alert("User token copied");
+        alert("Token copied to clipboard");
 
     }
 
@@ -130,7 +153,7 @@
 
         navigator.clipboard.writeText(token);
 
-        alert("Agent token copied");
+        alert("Token copied to clipboard");
 
     }
 

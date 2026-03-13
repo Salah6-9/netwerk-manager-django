@@ -7,7 +7,7 @@ from monitoring.models import ScanRun ,DeviceEnrollmentRequest , ScanLog, Device
 from monitoring.scanner.nmap_scanner import scan_network, cleanup_stalled_scans, LOCK_FILE
 from devices.models import Device 
 from users.models import Department
-
+import json
 import os
 from django.http import JsonResponse
 
@@ -110,13 +110,25 @@ def devices_list(request):
 def device_details(request, pk):
     device = get_object_or_404(Device, id=pk)
     status = DeviceMetric.objects.filter(device=device).first()
-    metrics = DeviceMetric.objects.filter(device=device).order_by("-timestamp")[:20]
     user_token = Token.objects.get(user=device.user)
+    metrics = DeviceMetric.objects.filter(device=device).order_by("-timestamp")[:50]
+    metrics = list(reversed(metrics))
+    time_data = [m.timestamp.strftime("%H:%M:%S") for m in metrics]
+    cpu_data = [m.cpu_usage or 0 for m in metrics]
+    ram_data = [m.ram_usage or 0 for m in metrics]
+    disk_data = [m.disk_usage or 0 for m in metrics]
+    temp_data = [m.cpu_temperature or 0 for m in metrics]
+
     context = {
         "device": device,
         "status": status,
         "metrics": metrics,
         "user_token" : user_token.key,
+        "time_data": json.dumps(time_data),
+        "cpu_data": json.dumps(cpu_data),
+        "ram_data": json.dumps(ram_data),
+        "disk_data": json.dumps(disk_data),
+        "temp_data": json.dumps(temp_data),
     }
     return render(request, "admin/device_details.html", context)
 # ------------------------------------------------------------------------------------------
