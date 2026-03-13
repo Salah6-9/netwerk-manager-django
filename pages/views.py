@@ -112,13 +112,11 @@ def device_details(request, pk):
     status = DeviceMetric.objects.filter(device=device).first()
     metrics = DeviceMetric.objects.filter(device=device).order_by("-timestamp")[:20]
     user_token = Token.objects.get(user=device.user)
-    last_seen = ScanLog.objects.filter(device=device).order_by("-timestamp").first()
     context = {
         "device": device,
         "status": status,
         "metrics": metrics,
         "user_token" : user_token.key,
-        "last_seen" : last_seen.last_seen
     }
     return render(request, "admin/device_details.html", context)
 # ------------------------------------------------------------------------------------------
