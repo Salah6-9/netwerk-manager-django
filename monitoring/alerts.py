@@ -15,7 +15,7 @@ def create_alert(device, title, message):
     if not recent_alert:
         Notification.objects.create(
             title=title,
-            message=message,
+            content=message,
             type="system",
             to_user=device.user
         )
@@ -23,7 +23,7 @@ def create_alert(device, title, message):
 
 def check_device_alerts(device, metric):
 
-    config = MonitoringConfig.load_config()
+    config = MonitoringConfig.load()
 
     if metric.cpu_usage > config.cpu_threshold:
         create_alert(
@@ -46,9 +46,9 @@ def check_device_alerts(device, metric):
             f"{device.hostname} disk usage is {metric.disk_usage}%"
         )
 
-    if metric.cpu_temp and metric.cpu_temp > config.temperature_threshold:
+    if metric.cpu_temperature and metric.cpu_temperature > config.temperature_threshold:
         create_alert(
             device,
             "High CPU Temperature",
-            f"{device.hostname} temperature is {metric.cpu_temp}°C"
+            f"{device.hostname} temperature is {metric.cpu_temperature}°C"
         )

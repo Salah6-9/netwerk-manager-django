@@ -1,6 +1,6 @@
 from rest_framework import serializers
-
-class MetricsSerializer(serializers.Serializer):
+from monitoring.models import DeviceMetric
+class MetricsSerializer(serializers.ModelSerializer):
     
     cpu_usage = serializers.FloatField()
     ram_usage = serializers.FloatField()
@@ -13,4 +13,15 @@ class MetricsSerializer(serializers.Serializer):
 
     uptime = serializers.IntegerField()
 
+    class Meta:
+        model = DeviceMetric
+        fields = [
+            "cpu_usage",
+            "ram_usage",
+            "disk_usage",
+            "network_in",
+            "network_out",
+            "cpu_temperature",
+            "uptime",
+        ]
     
