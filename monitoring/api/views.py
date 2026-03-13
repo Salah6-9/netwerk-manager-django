@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from devices.models import Device
 from monitoring.models import DeviceMetric, DeviceStatus, DeviceEnrollmentRequest
-
+from monitoring.alerts import check_device_alerts
 from .serializers import MetricsSerializer
 
 
@@ -25,8 +25,13 @@ class MetricsIngestView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        token = auth_header.split()[1]
-
+        try:
+            token = auth_header.split()[1]
+        except IndexError:
+            return Response(
+                {"error": "Invalid Authorization header"},
+                status=status.HTTP_403_FORBIDDEN
+            )
         try:
             device = Device.objects.get(agent_token=token)
         except Device.DoesNotExist:
@@ -43,16 +48,15 @@ class MetricsIngestView(APIView):
         data = serializer.validated_data
 
         # create history metric
-        DeviceMetric.objects.create(
-            device=device,
-            **data
-        )
+        metric = serializer.save(device=device)
 
         # update realtime status
         DeviceStatus.objects.update_or_create(
             device=device,
             defaults=data
         )
+        # check alerts
+        check_device_alerts(device, metric)
 
         return Response({"status": "ok"})
 
