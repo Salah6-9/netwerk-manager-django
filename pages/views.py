@@ -142,12 +142,18 @@ def device_details(request, pk):
 @user_passes_test(is_admin)
 def alerts_center(request):
 
-    alerts = Notification.objects.filter(
-        type="system"
-    ).order_by("-created_at")[:100]
+    alerts = Notification.objects.select_related(
+        "device",
+        "to_user"
+    ).order_by("-created_at")
+
+    active_alerts = alerts.filter(resolved=False).count()
+    resolved_alerts = alerts.filter(resolved=True).count()
 
     context = {
-        "alerts": alerts
+        "alerts": alerts,
+        "active_alerts": active_alerts,
+        "resolved_alerts": resolved_alerts,
     }
 
     return render(request, "admin/alerts.html", context)
