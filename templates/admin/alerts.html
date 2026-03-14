@@ -29,19 +29,21 @@
 
 <hr>
 
-<h2>Alerts</h2>
+<h2>Alerts List</h2>
 
 <table border="1" cellpadding="6" width="100%">
 
     <thead>
+
         <tr>
             <th>Time</th>
             <th>Device</th>
             <th>User</th>
             <th>Alert</th>
             <th>Status</th>
-            <th>Read</th>
+            <th>Actions</th>
         </tr>
+
     </thead>
 
     <tbody>
@@ -57,44 +59,65 @@
             <td>
 
                 {% if alert.device %}
+
                 <a href="{% url 'device_details' alert.device.id %}">
                     {{ alert.device.hostname }}
                 </a>
+
                 {% else %}
+
                 -
+
                 {% endif %}
 
             </td>
 
             <td>
+
                 {{ alert.to_user }}
+
             </td>
 
             <td>
+
                 {{ alert.title }}
+
             </td>
 
             <td>
 
                 {% if alert.resolved %}
+
                 <span style="color:green;font-weight:bold">
                     Resolved
                 </span>
+
                 {% else %}
+
                 <span style="color:red;font-weight:bold">
                     Active
                 </span>
+
                 {% endif %}
 
             </td>
 
+
             <td>
 
-                {% if alert.is_read %}
-                <span style="color:gray">Read</span>
-                {% else %}
-                <span style="color:orange">Unread</span>
+                {% if not alert.resolved %}
+
+                <a href="{% url 'resolve_alert' alert.id %}">
+                    Resolve
+                </a>
+
+                |
+
                 {% endif %}
+
+                <a href="{% url 'delete_alert' alert.id %}" onclick="return confirm('Delete this alert?');">
+                    Delete
+                </a>
 
             </td>
 
@@ -103,7 +126,7 @@
         {% empty %}
 
         <tr>
-            <td colspan="6">No alerts.</td>
+            <td colspan="7">No alerts available.</td>
         </tr>
 
         {% endfor %}

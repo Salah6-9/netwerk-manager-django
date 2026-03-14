@@ -10,6 +10,7 @@ from users.models import Department
 from notifications.models import Notification
 import json
 import os
+from django.utils import timezone
 from django.http import JsonResponse
 
 
@@ -157,6 +158,29 @@ def alerts_center(request):
     }
 
     return render(request, "admin/alerts.html", context)
+
+@login_required
+@user_passes_test(is_admin)
+def resolve_alert(request, pk):
+
+    alert = Notification.objects.get(id=pk)
+
+    alert.resolved = True
+    alert.resolved_at = timezone.now()
+
+    alert.save()
+
+    return redirect("alerts_center")
+    
+@login_required
+@user_passes_test(is_admin)
+def delete_alert(request, pk):
+
+    alert = Notification.objects.get(id=pk)
+
+    alert.delete()
+
+    return redirect("alerts_center")
 # ------------------------------------------------------------------------------------------
 
 ## Employee functions --------------------------------------------------------------------
