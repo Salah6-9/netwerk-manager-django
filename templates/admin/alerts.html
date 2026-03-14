@@ -50,7 +50,7 @@
 
             <th>Alert</th>
             <th>Status</th>
-
+            <th>Severity</th>
             {% if is_admin %}
             <th>Actions</th>
             {% endif %}
@@ -111,6 +111,25 @@
 
             </td>
 
+            <td>
+
+                {% if alert.severity == "critical" %}
+                <span style="color:red;font-weight:bold">
+                    CRITICAL
+                </span>
+
+                {% elif alert.severity == "warning" %}
+                <span style="color:orange;font-weight:bold">
+                    WARNING
+                </span>
+
+                {% else %}
+                <span style="color:gray">
+                    INFO
+                </span>
+                {% endif %}
+
+            </td>
 
             {% if is_admin %}
 
