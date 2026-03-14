@@ -136,6 +136,21 @@ def device_details(request, pk):
         "alerts": alerts,
     }
     return render(request, "admin/device_details.html", context)
+
+#Device alerts
+@login_required
+@user_passes_test(is_admin)
+def alerts_center(request):
+
+    alerts = Notification.objects.filter(
+        type="system"
+    ).order_by("-created_at")[:100]
+
+    context = {
+        "alerts": alerts
+    }
+
+    return render(request, "admin/alerts.html", context)
 # ------------------------------------------------------------------------------------------
 
 ## Employee functions --------------------------------------------------------------------

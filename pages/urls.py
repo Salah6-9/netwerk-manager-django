@@ -9,6 +9,7 @@ from .views import (
     devices_list,
     device_details,
     setup_agent,
+    alerts_center,
 )
 from . import views
 
@@ -33,5 +34,7 @@ urlpatterns = [
     path("devices/<int:pk>/", device_details, name="device_details"),
 
     path("setup-agent/", setup_agent, name="setup_agent"),
+
+    path("alerts/", alerts_center, name="alerts_center"),
 
 ]
