@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'monitoring.apps.MonitoringConfig',  # Custom app for monitoring
     "rest_framework",
     "rest_framework.authtoken",
+    "support",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
