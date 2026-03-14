@@ -21,6 +21,18 @@
             </form>
 
         </div>
+        <li>
+            <a href="{% url 'alerts_center' %}">
+                Alerts
+
+                {% if alerts_counter > 0 %}
+                <span style="color:red;font-weight:bold">
+                    ({{ alerts_counter }})
+                </span>
+                {% endif %}
+
+            </a>
+        </li>
 
     </header>
 
