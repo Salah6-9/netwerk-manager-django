@@ -10,6 +10,8 @@ from .views import (
     device_details,
     setup_agent,
     alerts_center,
+    resolve_alert,
+    delete_alert,
 )
 from . import views
 
@@ -36,5 +38,9 @@ urlpatterns = [
     path("setup-agent/", setup_agent, name="setup_agent"),
 
     path("alerts/", alerts_center, name="alerts_center"),
+
+    path("alerts/<int:pk>/resolve/", resolve_alert, name="resolve_alert"),
+
+    path("alerts/<int:pk>/delete/", delete_alert, name="delete_alert"),
 
 ]

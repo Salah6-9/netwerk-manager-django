@@ -10,6 +10,7 @@ from users.models import Department
 from notifications.models import Notification
 import json
 import os
+from django.utils import timezone
 from django.http import JsonResponse
 
 
@@ -142,15 +143,44 @@ def device_details(request, pk):
 @user_passes_test(is_admin)
 def alerts_center(request):
 
-    alerts = Notification.objects.filter(
-        type="system"
-    ).order_by("-created_at")[:100]
+    alerts = Notification.objects.select_related(
+        "device",
+        "to_user"
+    ).order_by("-created_at")
+
+    active_alerts = alerts.filter(resolved=False).count()
+    resolved_alerts = alerts.filter(resolved=True).count()
 
     context = {
-        "alerts": alerts
+        "alerts": alerts,
+        "active_alerts": active_alerts,
+        "resolved_alerts": resolved_alerts,
     }
 
     return render(request, "admin/alerts.html", context)
+
+@login_required
+@user_passes_test(is_admin)
+def resolve_alert(request, pk):
+
+    alert = Notification.objects.get(id=pk)
+
+    alert.resolved = True
+    alert.resolved_at = timezone.now()
+
+    alert.save()
+
+    return redirect("alerts_center")
+    
+@login_required
+@user_passes_test(is_admin)
+def delete_alert(request, pk):
+
+    alert = Notification.objects.get(id=pk)
+
+    alert.delete()
+
+    return redirect("alerts_center")
 # ------------------------------------------------------------------------------------------
 
 ## Employee functions --------------------------------------------------------------------

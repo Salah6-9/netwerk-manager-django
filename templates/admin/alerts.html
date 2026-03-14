@@ -6,44 +6,132 @@
 
 <hr>
 
-<table border="1">
+<!-- Alerts Summary -->
 
-    <tr>
-        <th>Time</th>
-        <th>User</th>
-        <th>Alert</th>
-        <th>Status</th>
-    </tr>
+<div style="display:flex;gap:20px;margin-bottom:20px">
 
-    {% for alert in alerts %}
+    <div style="border:1px solid #ccc;padding:10px;width:200px">
+        <strong>Total Alerts</strong><br>
+        {{ alerts|length }}
+    </div>
 
-    <tr>
+    <div style="border:1px solid #ccc;padding:10px;width:200px">
+        <strong>Active Alerts</strong><br>
+        {{ active_alerts }}
+    </div>
 
-        <td>{{ alert.created_at }}</td>
+    <div style="border:1px solid #ccc;padding:10px;width:200px">
+        <strong>Resolved Alerts</strong><br>
+        {{ resolved_alerts }}
+    </div>
 
-        <td>{{ alert.to_user }}</td>
+</div>
 
-        <td>{{ alert.title }}</td>
+<hr>
 
-        <td>
+<h2>Alerts List</h2>
 
-            {% if alert.is_read %}
-            Read
-            {% else %}
-            Unread
-            {% endif %}
+<table border="1" cellpadding="6" width="100%">
 
-        </td>
+    <thead>
 
-    </tr>
+        <tr>
+            <th>Time</th>
+            <th>Device</th>
+            <th>User</th>
+            <th>Alert</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
 
-    {% empty %}
+    </thead>
 
-    <tr>
-        <td colspan="4">No alerts.</td>
-    </tr>
+    <tbody>
 
-    {% endfor %}
+        {% for alert in alerts %}
+
+        <tr>
+
+            <td>
+                {{ alert.created_at|date:"Y-m-d H:i:s" }}
+            </td>
+
+            <td>
+
+                {% if alert.device %}
+
+                <a href="{% url 'device_details' alert.device.id %}">
+                    {{ alert.device.hostname }}
+                </a>
+
+                {% else %}
+
+                -
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {{ alert.to_user }}
+
+            </td>
+
+            <td>
+
+                {{ alert.title }}
+
+            </td>
+
+            <td>
+
+                {% if alert.resolved %}
+
+                <span style="color:green;font-weight:bold">
+                    Resolved
+                </span>
+
+                {% else %}
+
+                <span style="color:red;font-weight:bold">
+                    Active
+                </span>
+
+                {% endif %}
+
+            </td>
+
+
+            <td>
+
+                {% if not alert.resolved %}
+
+                <a href="{% url 'resolve_alert' alert.id %}">
+                    Resolve
+                </a>
+
+                |
+
+                {% endif %}
+
+                <a href="{% url 'delete_alert' alert.id %}" onclick="return confirm('Delete this alert?');">
+                    Delete
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="7">No alerts available.</td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
 
 </table>
 
