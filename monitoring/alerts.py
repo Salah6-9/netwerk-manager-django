@@ -7,27 +7,41 @@ from notifications.models import Notification
 
 
 WINDOW_MINUTES = 5
-ALERT_COOLDOWN = 10
 
 
 def create_alert(device, title, message, severity):
 
-    recent_alert = Notification.objects.filter(
+    existing_alert = Notification.objects.filter(
         device=device,
         title=title,
-        created_at__gte=timezone.now() - timedelta(minutes=ALERT_COOLDOWN)
-    ).exists()
+        resolved=False
+    ).first()
 
-    if not recent_alert:
+    if existing_alert:
+        return
 
-        Notification.objects.create(
-            device=device,
-            title=title,
-            content=message,
-            type="system",
-            to_user=device.user,
-            severity=severity
-        )
+    Notification.objects.create(
+        device=device,
+        title=title,
+        content=message,
+        type="system",
+        to_user=device.user,
+        severity=severity
+    )
+
+
+def resolve_alert(device, title):
+
+    alert = Notification.objects.filter(
+        device=device,
+        title=title,
+        resolved=False
+    ).first()
+
+    if alert:
+        alert.resolved = True
+        alert.resolved_at = timezone.now()
+        alert.save()
 
 
 def check_device_alerts(device):
@@ -53,6 +67,8 @@ def check_device_alerts(device):
     avg_disk = averages["avg_disk"]
     avg_temp = averages["avg_temp"]
 
+    # ---------------- CPU ----------------
+
     if avg_cpu and avg_cpu > config.cpu_threshold:
 
         create_alert(
@@ -61,6 +77,12 @@ def check_device_alerts(device):
             f"Average CPU usage over last {WINDOW_MINUTES} minutes is {avg_cpu:.2f}%",
             severity="warning"
         )
+
+    else:
+
+        resolve_alert(device, "High CPU Usage")
+
+    # ---------------- RAM ----------------
 
     if avg_ram and avg_ram > config.ram_threshold:
 
@@ -71,6 +93,12 @@ def check_device_alerts(device):
             severity="warning"
         )
 
+    else:
+
+        resolve_alert(device, "High RAM Usage")
+
+    # ---------------- Disk ----------------
+
     if avg_disk and avg_disk > config.disk_threshold:
 
         create_alert(
@@ -80,6 +108,12 @@ def check_device_alerts(device):
             severity="warning"
         )
 
+    else:
+
+        resolve_alert(device, "Disk Almost Full")
+
+    # ---------------- Temperature ----------------
+
     if avg_temp and avg_temp > config.temperature_threshold:
 
         create_alert(
@@ -88,3 +122,7 @@ def check_device_alerts(device):
             f"Average CPU temperature over last {WINDOW_MINUTES} minutes is {avg_temp:.2f}°C",
             severity="critical"
         )
+
+    else:
+
+        resolve_alert(device, "High CPU Temperature")
