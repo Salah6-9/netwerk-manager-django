@@ -113,7 +113,10 @@ def device_details(request, pk):
     device = get_object_or_404(Device, id=pk)
     status = DeviceMetric.objects.filter(device=device).first()
     user_token = Token.objects.get(user=device.user)
-    metrics = DeviceMetric.objects.filter(device=device).order_by("-timestamp")[:50]
+    metrics = DeviceMetric.objects.filter(
+        device=device,
+        timestamp__gte=timezone.now() - timedelta(hours=24)
+    ).order_by("timestamp")
     metrics = list(reversed(metrics))
     time_data = [m.timestamp.strftime("%H:%M:%S") for m in metrics]
     cpu_data = [m.cpu_usage or 0 for m in metrics]
