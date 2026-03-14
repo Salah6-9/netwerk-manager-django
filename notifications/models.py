@@ -7,10 +7,16 @@ class Notification(models.Model):
         ("manual", "Manual"),
         ("system", "System"),
     ]
+    SEVERITY_CHOICES = [
+        ("info", "Info"),
+        ("warning", "Warning"),
+        ("error", "Error"),
+    ]
 
     title = models.CharField(max_length=100)
     content = models.TextField()
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="manual")
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default="warning")
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

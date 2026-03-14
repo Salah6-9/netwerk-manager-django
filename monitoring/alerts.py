@@ -10,7 +10,7 @@ WINDOW_MINUTES = 5
 ALERT_COOLDOWN = 10
 
 
-def create_alert(device, title, message):
+def create_alert(device, title, message, severity):
 
     recent_alert = Notification.objects.filter(
         device=device,
@@ -25,7 +25,8 @@ def create_alert(device, title, message):
             title=title,
             content=message,
             type="system",
-            to_user=device.user
+            to_user=device.user,
+            severity=severity
         )
 
 
@@ -57,7 +58,8 @@ def check_device_alerts(device):
         create_alert(
             device,
             "High CPU Usage",
-            f"Average CPU usage over last {WINDOW_MINUTES} minutes is {avg_cpu:.2f}%"
+            f"Average CPU usage over last {WINDOW_MINUTES} minutes is {avg_cpu:.2f}%",
+            severity="warning"
         )
 
     if avg_ram and avg_ram > config.ram_threshold:
@@ -65,7 +67,8 @@ def check_device_alerts(device):
         create_alert(
             device,
             "High RAM Usage",
-            f"Average RAM usage over last {WINDOW_MINUTES} minutes is {avg_ram:.2f}%"
+            f"Average RAM usage over last {WINDOW_MINUTES} minutes is {avg_ram:.2f}%",
+            severity="warning"
         )
 
     if avg_disk and avg_disk > config.disk_threshold:
@@ -73,7 +76,8 @@ def check_device_alerts(device):
         create_alert(
             device,
             "Disk Almost Full",
-            f"Average disk usage over last {WINDOW_MINUTES} minutes is {avg_disk:.2f}%"
+            f"Average disk usage over last {WINDOW_MINUTES} minutes is {avg_disk:.2f}%",
+            severity="warning"
         )
 
     if avg_temp and avg_temp > config.temperature_threshold:
@@ -81,5 +85,6 @@ def check_device_alerts(device):
         create_alert(
             device,
             "High CPU Temperature",
-            f"Average CPU temperature over last {WINDOW_MINUTES} minutes is {avg_temp:.2f}°C"
+            f"Average CPU temperature over last {WINDOW_MINUTES} minutes is {avg_temp:.2f}°C",
+            severity="critical"
         )
