@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>System Alerts</h1>
+
+<hr>
+
+<table border="1">
+
+    <tr>
+        <th>Time</th>
+        <th>User</th>
+        <th>Alert</th>
+        <th>Status</th>
+    </tr>
+
+    {% for alert in alerts %}
+
+    <tr>
+
+        <td>{{ alert.created_at }}</td>
+
+        <td>{{ alert.to_user }}</td>
+
+        <td>{{ alert.title }}</td>
+
+        <td>
+
+            {% if alert.is_read %}
+            Read
+            {% else %}
+            Unread
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% empty %}
+
+    <tr>
+        <td colspan="4">No alerts.</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}
