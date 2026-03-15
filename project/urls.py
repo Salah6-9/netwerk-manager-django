@@ -24,5 +24,6 @@ urlpatterns = [
     path ('',include('pages.urls')),  # Include URLs from the pages app'))
     path ('accounts/',include('django.contrib.auth.urls')),
     path ("",include("monitoring.urls")),
+    path("support/", include("support.urls")),
 ] + static (settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

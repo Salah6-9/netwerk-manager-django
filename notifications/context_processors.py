@@ -1,19 +1,16 @@
-from notifications.models import Notification
+from .models import Notification
 
-
-def alerts_counter(request):
+def notifications(request):
 
     if not request.user.is_authenticated:
         return {}
 
-    if request.user.is_staff:
-        count = Notification.objects.filter(resolved=False).count()
-    else:
-        count = Notification.objects.filter(
-            to_user=request.user,
-            resolved=False
-        ).count()
+    user_notifications = Notification.objects.filter(
+        to_user=request.user,
+        resolved=False
+    )
 
     return {
-        "alerts_counter": count
+        "notifications_count": user_notifications.count(),
+        "notifications": user_notifications.order_by("-created_at")[:10],
     }

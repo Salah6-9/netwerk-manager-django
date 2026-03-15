@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Support Tickets</h1>
+
+<a href="{% url 'create_ticket' %}">
+<button>Create Ticket</button>
+</a>
+
+<hr>
+
+<table border="1" cellpadding="6" width="100%">
+
+<tr>
+<th>Ticket</th>
+<th>Device</th>
+<th>User</th>
+<th>Title</th>
+<th>Status</th>
+<th>Created</th>
+</tr>
+
+{% for ticket in tickets %}
+
+<tr>
+
+<td>
+<a href="{% url 'ticket_detail' ticket.id %}">
+{{ ticket.ticket_code }}
+</a>
+</td>
+
+<td>
+
+{% if ticket.device %}
+{{ ticket.device.hostname }}
+{% else %}
+-
+{% endif %}
+
+</td>
+
+<td>
+{{ ticket.user }}
+</td>
+
+<td>
+{{ ticket.title }}
+</td>
+
+<td>
+{{ ticket.status }}
+</td>
+
+<td>
+{{ ticket.created_at }}
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="6">No tickets.</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

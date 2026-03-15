@@ -6,6 +6,7 @@ class Notification(models.Model):
     TYPE_CHOICES = [
         ("manual", "Manual"),
         ("system", "System"),
+        ("support", "Support"),
     ]
     SEVERITY_CHOICES = [
         ("info", "Info"),

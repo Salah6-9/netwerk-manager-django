@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Ticket {{ ticket.ticket_code }}</h1>
+
+<hr>
+
+<ul>
+
+    <li>User: {{ ticket.user }}</li>
+
+    <li>Device:
+
+        {% if ticket.device %}
+        {{ ticket.device.hostname }}
+        {% else %}
+        -
+        {% endif %}
+
+    </li>
+
+    <li>Status: {{ ticket.status }}</li>
+
+    <li>Created: {{ ticket.created_at }}</li>
+
+</ul>
+<h3>Status: {{ ticket.get_status_display }}</h3>
+
+{% if request.user.is_staff %}
+
+<form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+    {% csrf_token %}
+
+    <button name="status" value="in_progress">
+        Start Progress
+    </button>
+
+    <button name="status" value="resolved">
+        Resolve
+    </button>
+
+    <button name="status" value="closed">
+        Close
+    </button>
+
+</form>
+
+{% endif %}
+
+<form method="post" action="{% url 'delete_ticket' ticket.id %}">
+    {% csrf_token %}
+    <button type="submit" onclick="return confirm('Delete this ticket?')">
+        Delete Ticket
+    </button>
+</form>
+<hr>
+
+<h3>Description</h3>
+
+<p>
+    {{ ticket.description }}
+</p>
+
+<h2>Conversation</h2>
+
+<div style="border:1px solid #ccc;padding:15px;margin-bottom:20px">
+
+    {% for msg in ticket.messages.all %}
+
+    <div style="margin-bottom:15px">
+
+        <strong>{{ msg.author.username }}</strong>
+        <small>{{ msg.created_at|date:"Y-m-d H:i" }}</small>
+
+        <p>{{ msg.content }}</p>
+
+        <hr>
+
+    </div>
+
+    {% empty %}
+
+    <p>No messages yet.</p>
+
+    {% endfor %}
+
+</div>
+<h3>Add Reply</h3>
+
+<form method="post" action="{% url 'add_ticket_message' ticket.id %}">
+
+    {% csrf_token %}
+
+    <textarea name="content" rows="4" style="width:100%" required></textarea>
+
+    <br><br>
+
+    <button type="submit">
+        Send Reply
+    </button>
+
+</form>
+{% endblock %}

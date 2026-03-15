@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Create Support Ticket</h1>
+<input type="hidden" id="device-id" value="{{ device.id|default:'' }}">
+
+<form method="post">
+    {% csrf_token %}
+    {% if request.user.is_staff %}
+
+    <label>Department</label>
+    <br>
+
+    <select id="department" name="department">
+
+        <option value="">Select Department</option>
+
+        {% for d in departments %}
+
+        <option value="{{ d.id }}" {% if selected_department and d.id == selected_department.id %}selected{% endif %}>
+            {{ d.name }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+    <br><br>
+
+    <label>Office</label>
+    <br>
+
+    <select id="office" name="office">
+
+        {% if selected_office %}
+
+        <option value="{{selected_office.id}}" selected>
+            {{selected_office.name}}
+        </option>
+
+        {% else %}
+
+        <option value="">Select Office</option>
+
+        {% endif %}
+
+    </select>
+
+    <br><br>
+
+    <label>User</label>
+    <br>
+
+    <select id="user" name="user">
+
+        {% if selected_user %}
+
+        <option value="{{selected_user.id}}" selected>
+            {{selected_user.username}}
+        </option>
+
+        {% else %}
+
+        <option value="">Select User</option>
+
+        {% endif %}
+
+    </select>
+    {% if device %}
+
+    <div style="background:#f5f5f5;padding:10px;margin-bottom:15px">
+
+        <strong>Device:</strong>
+        {{ device.hostname }} ({{ device.mac }})
+
+        <input type="hidden" name="device" value="{{ device.id }}">
+
+    </div>
+
+    {% endif %}
+
+    {%endif%}
+    <br><br>
+
+    <label>Title</label>
+    <br>
+
+    <input type="text" name="title" required>
+
+    <br><br>
+
+    <label>Description</label>
+    <br>
+
+    <textarea name="description" rows="6"></textarea>
+
+    <br><br>
+
+    <button type="submit">
+        Create Ticket
+    </button>
+
+</form>
+
+<script>
+
+    const deviceId = document.getElementById("device-id").value;
+
+    // إذا لم تكن التذكرة قادمة من جهاز
+    if (!deviceId) {
+
+        document.getElementById("department").addEventListener("change", function () {
+
+            let departmentId = this.value;
+
+            fetch(`/support/api/offices/${departmentId}/`)
+                .then(response => response.json())
+                .then(data => {
+
+                    let officeSelect = document.getElementById("office");
+
+                    officeSelect.innerHTML = "<option value=''>Select Office</option>";
+
+                    document.getElementById("user").innerHTML =
+                        "<option value=''>Select User</option>";
+
+                    data.forEach(function (office) {
+
+                        officeSelect.innerHTML +=
+                            `<option value="${office.id}">
+                            ${office.name}
+                        </option>`;
+
+                    });
+
+                });
+
+        });
+
+
+        document.getElementById("office").addEventListener("change", function () {
+
+            let officeId = this.value;
+
+            fetch(`/support/api/users/${officeId}/`)
+                .then(response => response.json())
+                .then(data => {
+
+                    let userSelect = document.getElementById("user");
+
+                    userSelect.innerHTML = "<option value=''>Select User</option>";
+
+                    data.forEach(function (user) {
+
+                        userSelect.innerHTML +=
+                            `<option value="${user.id}">
+                            ${user.username}
+                        </option>`;
+
+                    });
+
+                });
+
+        });
+
+    }
+
+</script>
+
+{% endblock %}
