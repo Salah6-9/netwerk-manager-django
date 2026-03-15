@@ -24,7 +24,15 @@
 </ul>
 
 <hr>
+<hr>
 
+<a href="{% url 'create_ticket' %}?device={{ device.id }}">
+
+    <button>
+        Create Support Ticket
+    </button>
+
+</a>
 <h3>Current Metrics</h3>
 
 {% if status %}

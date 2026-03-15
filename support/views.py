@@ -54,28 +54,46 @@ User = get_user_model()
 def create_ticket(request):
 
     departments = Department.objects.all()
+    device = None
+    selected_department = None
+    selected_office = None
+    selected_user = None
+
+    device_id = request.GET.get("device")
+    if device_id:
+
+        device = get_object_or_404(
+            Device.objects.select_related(
+                "user__profile__office__department"
+            ),
+            id=device_id
+        )
+        if device.user and device.user.profile and device.user.profile.office:
+
+            selected_user = device.user
+            selected_office = device.user.profile.office
+            selected_department = selected_office.department
 
     if request.method == "POST":
 
         department_id = request.POST.get("department")
         office_id = request.POST.get("office")
         user_id = request.POST.get("user")
-        device_id = request.POST.get("device")
 
         title = request.POST.get("title")
         description = request.POST.get("description")
 
-        # التحقق من القسم
+        # check department
         department = get_object_or_404(Department, id=department_id)
 
-        # التحقق من المكتب داخل القسم
+        # check office inside department
         office = get_object_or_404(
             Office,
             id=office_id,
             department=department
         )
 
-        # التحقق أن المستخدم داخل هذا المكتب
+        # check user inside office
         profile = get_object_or_404(
             Profile.objects.select_related("user"),
             user_id=user_id,
@@ -86,7 +104,7 @@ def create_ticket(request):
 
         device = None
 
-        # التحقق أن الجهاز يخص هذا المستخدم
+        # check device inside user
         if device_id:
             device = get_object_or_404(
                 Device,
@@ -100,12 +118,19 @@ def create_ticket(request):
             title=title,
             description=description
         )
-
+        if device.user and device.user.profile and device.user.profile.office:
+            selected_user = device.user
+            selected_office = device.user.profile.office
+            selected_department = selected_office.department
         return redirect("tickets_list")
 
     return render(request, "support/create.html", {
         "departments": departments,
-    })
+        "device": device,
+        "selected_department": selected_department,
+        "selected_office": selected_office,
+        "selected_user": selected_user
+})
 
 def offices_by_department(request, department_id):
 
