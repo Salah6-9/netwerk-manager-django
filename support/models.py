@@ -2,6 +2,8 @@ from django.db import models
 from users.models import User
 from devices.models import Device
 from notifications.models import Notification
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 class SupportTicket(models.Model):
@@ -84,3 +86,24 @@ class SupportTicket(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class TicketMessage(models.Model):
+    ticket = models.ForeignKey(
+        SupportTicket,
+        on_delete=models.CASCADE,
+        related_name="messages"
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="ticket_messages"
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Msg #{self.id} on {self.ticket.ticket_code}"
