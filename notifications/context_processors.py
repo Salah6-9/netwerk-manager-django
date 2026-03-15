@@ -1,19 +1,16 @@
-from notifications.models import Notification
-
 from .models import Notification
 
-
-def alerts_counter(request):
+def notifications(request):
 
     if not request.user.is_authenticated:
         return {}
 
-    notifications = Notification.objects.filter(
+    user_notifications = Notification.objects.filter(
         to_user=request.user,
         resolved=False
-    ).order_by("-created_at")
+    )
 
     return {
-        "notifications": notifications[:10],
-        "notifications_count": notifications.count(),
+        "notifications_count": user_notifications.count(),
+        "notifications": user_notifications.order_by("-created_at")[:10],
     }

@@ -6,8 +6,8 @@
 <input type="hidden" id="device-id" value="{{ device.id|default:'' }}">
 
 <form method="post">
-    {% if request.user.is_staff %}
     {% csrf_token %}
+    {% if request.user.is_staff %}
 
     <label>Department</label>
     <br>

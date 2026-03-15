@@ -61,15 +61,14 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')    ],  # Global templates directory
-        'DIRS':[BASE_DIR/'templates'],
+        'DIRS': [BASE_DIR / 'templates'],  # Global templates directory
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-		        'notifications.context_processors.alerts_counter',
+                'notifications.context_processors.notifications',
             ],
         },
     },

@@ -24,13 +24,11 @@
         <li>
             <a href="{% url 'alerts_center' %}">
                 Alerts
-
-                {% if alerts_counter > 0 %}
+                {% if notifications_count > 0 %}
                 <span style="color:red;font-weight:bold">
-                    ({{ alerts_counter }})
+                    {{ notifications_count }}
                 </span>
                 {% endif %}
-
             </a>
         </li>
         <li>
