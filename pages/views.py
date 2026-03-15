@@ -143,29 +143,37 @@ def device_details(request, pk):
 
 #Device alerts
 @login_required
-def alerts_center(request):
+def notifications_center(request):
     if not is_admin(request.user):
-        alerts = Notification.objects.select_related(
+        notifications = Notification.objects.select_related(
             "device",
             "to_user"
         ).filter(to_user=request.user).order_by("-created_at")
+
     else:
-        alerts = Notification.objects.select_related(
+        notifications = Notification.objects.select_related(
             "device",
             "to_user"
         ).order_by("-created_at")
 
-    active_alerts = alerts.filter(resolved=False).count()
-    resolved_alerts = alerts.filter(resolved=True).count()
+    # Monitoring alerts
+    monitoring_alerts = notifications.filter(type="system")
+
+    # Support notifications
+    support_notifications = notifications.filter(type="support")
+
+    active_alerts = monitoring_alerts.filter(resolved=False).count()
+    resolved_alerts = monitoring_alerts.filter(resolved=True).count()
 
     context = {
-        "alerts": alerts,
+        "monitoring_alerts": monitoring_alerts,
+        "support_notifications": support_notifications,
         "active_alerts": active_alerts,
         "resolved_alerts": resolved_alerts,
         "is_admin": request.user.is_staff
     }
 
-    return render(request, "admin/alerts.html", context)
+    return render(request, "admin/notifications.html", context)
 
 @login_required
 @user_passes_test(is_admin)

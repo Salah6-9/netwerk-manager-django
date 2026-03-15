@@ -22,8 +22,8 @@
 
         </div>
         <li>
-            <a href="{% url 'alerts_center' %}">
-                Alerts
+            <a href="{% url 'notifications_center' %}">
+                Notifications
                 {% if notifications_count > 0 %}
                 <span style="color:red;font-weight:bold">
                     {{ notifications_count }}
@@ -53,7 +53,7 @@
                 <li><a href="/dashboard/">Dashboard</a></li>
 
                 <li>
-                    <a href="/alerts/">Alerts</a>
+                    <a href="/notifications/">Notifications</a>
                 </li>
                 {% if request.user.is_staff %}
 

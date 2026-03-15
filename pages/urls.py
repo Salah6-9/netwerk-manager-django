@@ -4,12 +4,12 @@ from .views import (
     dashboard_status_api,
     enrollment_requests,
     approve_enrollment,
-    reject_enrollment, 
+    reject_enrollment,
     delete_enrollment,
     devices_list,
     device_details,
     setup_agent,
-    alerts_center,
+    notifications_center,
     resolve_alert,
     delete_alert,
 )
@@ -37,8 +37,10 @@ urlpatterns = [
 
     path("setup-agent/", setup_agent, name="setup_agent"),
 
-    path("alerts/", alerts_center, name="alerts_center"),
+    # Notifications Center
+    path("notifications/", notifications_center, name="notifications_center"),
 
+    # Monitoring Alert Actions
     path("alerts/<int:pk>/resolve/", resolve_alert, name="resolve_alert"),
 
     path("alerts/<int:pk>/delete/", delete_alert, name="delete_alert"),
