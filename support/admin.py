@@ -23,4 +23,4 @@ class SupportTicketAdmin(admin.ModelAdmin):
         "title",
         "user__name",
         "device__hostname",
-    )
+)

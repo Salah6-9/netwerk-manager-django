@@ -54,23 +54,45 @@ User = get_user_model()
 def create_ticket(request):
 
     departments = Department.objects.all()
-    offices = Office.objects.all()
-    users = User.objects.select_related("profile").all()
-    devices = Device.objects.select_related("user").all()
 
     if request.method == "POST":
 
+        department_id = request.POST.get("department")
+        office_id = request.POST.get("office")
         user_id = request.POST.get("user")
         device_id = request.POST.get("device")
 
         title = request.POST.get("title")
         description = request.POST.get("description")
 
-        user = User.objects.get(id=user_id)
+        # التحقق من القسم
+        department = get_object_or_404(Department, id=department_id)
+
+        # التحقق من المكتب داخل القسم
+        office = get_object_or_404(
+            Office,
+            id=office_id,
+            department=department
+        )
+
+        # التحقق أن المستخدم داخل هذا المكتب
+        profile = get_object_or_404(
+            Profile.objects.select_related("user"),
+            user_id=user_id,
+            office=office
+        )
+
+        user = profile.user
 
         device = None
+
+        # التحقق أن الجهاز يخص هذا المستخدم
         if device_id:
-            device = Device.objects.get(id=device_id)
+            device = get_object_or_404(
+                Device,
+                id=device_id,
+                user=user
+            )
 
         SupportTicket.objects.create(
             user=user,
@@ -83,9 +105,6 @@ def create_ticket(request):
 
     return render(request, "support/create.html", {
         "departments": departments,
-        "offices": offices,
-        "users": users,
-        "devices": devices
     })
 
 def offices_by_department(request, department_id):
@@ -105,7 +124,7 @@ def offices_by_department(request, department_id):
 
 def users_by_office(request, office_id):
 
-    profiles = Profile.objects.filter(office_id=office_id)
+    profiles = Profile.objects.filter(office_id=office_id).select_related("user")
 
     data = [
         {

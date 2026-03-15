@@ -11,8 +11,7 @@
     <label>Department</label>
     <br>
 
-    <select id="department">
-
+    <select id="department" name="department">
         <option value="">Select Department</option>
 
         {% for d in departments %}
@@ -81,8 +80,10 @@
 
                 let officeSelect = document.getElementById("office");
 
-                officeSelect.innerHTML = "<option>Select Office</option>";
+                officeSelect.innerHTML = "<option value=''>Select Office</option>";
 
+                document.getElementById("user").innerHTML =
+                    "<option value=''>Select User</option>";
                 data.forEach(function (office) {
 
                     officeSelect.innerHTML +=

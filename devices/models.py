@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 import secrets
+from django.core.exceptions import ValidationError
+
 
 class Device(models.Model):
     STATUS_CHOICES = [
@@ -34,11 +36,25 @@ class Device(models.Model):
     )
     hostname = models.CharField(max_length=255, blank=True, null=True)
     os = models.CharField(max_length=50, blank=True, null=True)
+    # validate that device office must match user office
+    def clean(self):
+
+        if self.user and self.office:
+
+            if self.user.profile.office != self.office:
+
+                raise ValidationError({
+                    "office": "Device office must match user's office"
+                })
+    # save -- generate agent token
     def save(self, *args, **kwargs):
-        if not self.agent_token:
-            self.agent_token = secrets.token_hex(32)
+
+        if self.user and self.office:
+
+            if self.user.profile.office != self.office:
+                raise ValueError("Device office must match user office")
+
         super().save(*args, **kwargs)
-    
     def __str__(self):
         if self.user:
             return f"{self.user.username} - {self.mac}"
