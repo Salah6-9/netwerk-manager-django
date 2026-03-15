@@ -25,7 +25,28 @@
     <li>Created: {{ ticket.created_at }}</li>
 
 </ul>
+<h3>Status: {{ ticket.get_status_display }}</h3>
 
+{% if request.user.is_staff %}
+
+<form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+    {% csrf_token %}
+
+    <button name="status" value="in_progress">
+        Start Progress
+    </button>
+
+    <button name="status" value="resolved">
+        Resolve
+    </button>
+
+    <button name="status" value="closed">
+        Close
+    </button>
+
+</form>
+
+{% endif %}
 <hr>
 
 <h3>Description</h3>

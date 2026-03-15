@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from users.models import Office, Department, Profile
+from notifications.models import Notification
 
 User = get_user_model()
 
@@ -187,5 +188,36 @@ def add_ticket_message(request, ticket_id):
             author=request.user,
             content=content
         )
+
+    return redirect("ticket_detail", ticket_id=ticket.id)
+
+@login_required
+@require_POST
+def update_ticket_status(request, ticket_id):
+
+    ticket = get_object_or_404(SupportTicket, id=ticket_id)
+
+    # Admin only
+    if not request.user.is_staff:
+        return render(request, "403.html")
+
+    new_status = request.POST.get("status")
+
+    allowed_status = ["open", "in_progress", "resolved", "closed"]
+
+    if new_status not in allowed_status:
+        return redirect("ticket_detail", ticket_id=ticket.id)
+
+    ticket.status = new_status
+    ticket.save()
+
+    # notification to the user
+    Notification.objects.create(
+        title="Ticket status updated",
+        content=f"Your ticket {ticket.ticket_code} is now {new_status}",
+        type="support",
+        to_user=ticket.user,
+        device=ticket.device
+    )
 
     return redirect("ticket_detail", ticket_id=ticket.id)

@@ -15,4 +15,6 @@ urlpatterns = [
 
     path("<int:ticket_id>/message/", views.add_ticket_message, name="add_ticket_message"),
 
+    path("<int:ticket_id>/status/", views.update_ticket_status, name="update_ticket_status"),
+
 ]
