@@ -1,22 +1,26 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import SupportTicket , TicketMessage
-from devices.models import Device
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+
+from .models import SupportTicket, TicketMessage
+from devices.models import Device
 from users.models import Office, Department, Profile
 from notifications.models import Notification
 
 User = get_user_model()
+
+
+# -------------------------
+# Tickets List
+# -------------------------
 
 @login_required
 def tickets_list(request):
 
     if request.user.is_staff:
         tickets = SupportTicket.objects.all().order_by("-created_at")
-
     else:
         tickets = SupportTicket.objects.filter(
             user=request.user
@@ -26,6 +30,10 @@ def tickets_list(request):
         "tickets": tickets
     })
 
+
+# -------------------------
+# Ticket Detail
+# -------------------------
 
 @login_required
 def ticket_detail(request, ticket_id):
@@ -40,16 +48,9 @@ def ticket_detail(request, ticket_id):
     })
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
-
-from devices.models import Device
-from users.models import Department, Office, Profile
-from .models import SupportTicket
-from django.views.decorators.http import require_POST
-User = get_user_model()
-
+# -------------------------
+# Create Ticket
+# -------------------------
 
 @login_required
 def create_ticket(request):
@@ -106,29 +107,50 @@ def create_ticket(request):
             user = profile.user
 
         else:
-
             user = request.user
 
         # validate device ownership
         if device_id:
-
             device = get_object_or_404(
                 Device,
                 id=device_id,
                 user=user
             )
 
+        # Create ticket
         ticket = SupportTicket.objects.create(
             user=user,
             device=device,
             title=title,
             description=description
         )
+
+        # First message
         TicketMessage.objects.create(
             ticket=ticket,
-            author=user,
+            author=request.user,
             content=description
         )
+
+        # -----------------
+        # Notification Logic
+        # -----------------
+
+        if request.user.is_staff:
+            recipients = [user]
+        else:
+            recipients = User.objects.filter(is_staff=True)
+
+        for r in recipients:
+            if r != request.user:
+
+                Notification.objects.create(
+                    title="New Support Ticket",
+                    content=f"Ticket {ticket.ticket_code} created",
+                    type="support",
+                    to_user=r,
+                    device=device
+                )
 
         return redirect("tickets_list")
 
@@ -139,6 +161,11 @@ def create_ticket(request):
         "selected_office": selected_office,
         "selected_user": selected_user
     })
+
+
+# -------------------------
+# AJAX Offices
+# -------------------------
 
 def offices_by_department(request, department_id):
 
@@ -155,9 +182,15 @@ def offices_by_department(request, department_id):
     return JsonResponse(data, safe=False)
 
 
+# -------------------------
+# AJAX Users
+# -------------------------
+
 def users_by_office(request, office_id):
 
-    profiles = Profile.objects.filter(office_id=office_id).select_related("user")
+    profiles = Profile.objects.filter(
+        office_id=office_id
+    ).select_related("user")
 
     data = [
         {
@@ -170,26 +203,52 @@ def users_by_office(request, office_id):
     return JsonResponse(data, safe=False)
 
 
+# -------------------------
+# Add Ticket Message
+# -------------------------
+
 @login_required
 @require_POST
 def add_ticket_message(request, ticket_id):
 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
-    if not request.user.is_staff and ticket.user != request.user :
+    if not request.user.is_staff and ticket.user != request.user:
         return render(request, "403.html")
 
     content = request.POST.get("content")
 
     if content:
 
-        TicketMessage.objects.create(
+        message = TicketMessage.objects.create(
             ticket=ticket,
             author=request.user,
             content=content
         )
 
+        # Notification logic
+
+        if request.user.is_staff:
+            recipient = ticket.user
+        else:
+            recipient = User.objects.filter(is_staff=True).first()
+
+        if recipient and recipient != request.user:
+
+            Notification.objects.create(
+                title="New reply on ticket",
+                content=f"{request.user.username} replied to ticket {ticket.ticket_code}",
+                type="support",
+                to_user=recipient,
+                device=ticket.device
+            )
+
     return redirect("ticket_detail", ticket_id=ticket.id)
+
+
+# -------------------------
+# Update Ticket Status
+# -------------------------
 
 @login_required
 @require_POST
@@ -197,7 +256,6 @@ def update_ticket_status(request, ticket_id):
 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
-    # Admin only
     if not request.user.is_staff:
         return render(request, "403.html")
 
@@ -205,19 +263,26 @@ def update_ticket_status(request, ticket_id):
 
     allowed_status = ["open", "in_progress", "resolved", "closed"]
 
-    if new_status not in allowed_status:
-        return redirect("ticket_detail", ticket_id=ticket.id)
-
-    ticket.status = new_status
-    ticket.save()
-
-    # notification to the user
-    Notification.objects.create(
-        title="Ticket status updated",
-        content=f"Your ticket {ticket.ticket_code} is now {new_status}",
-        type="support",
-        to_user=ticket.user,
-        device=ticket.device
-    )
+    if new_status in allowed_status:
+        ticket.status = new_status
+        ticket.save()
 
     return redirect("ticket_detail", ticket_id=ticket.id)
+
+
+# -------------------------
+# Delete Ticket
+# -------------------------
+
+@login_required
+@require_POST
+def delete_ticket(request, ticket_id):
+
+    ticket = get_object_or_404(SupportTicket, id=ticket_id)
+
+    if not request.user.is_staff and ticket.user != request.user:
+        return render(request, "403.html")
+
+    ticket.delete()
+
+    return redirect("tickets_list")
