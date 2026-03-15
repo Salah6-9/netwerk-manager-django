@@ -45,9 +45,42 @@ class SupportTicket(models.Model):
         default="open"
     )
 
+    ticket_code = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     updated_at = models.DateTimeField(auto_now=True)
+    priority = models.CharField(
+    max_length=20,
+    choices=[
+        ("low","Low"),
+        ("medium","Medium"),
+        ("high","High"),
+        ("critical","Critical"),
+    ],
+    default="medium"
+    )   
+
+    def save(self, *args, **kwargs):
+
+        # Save first to get ID
+        if not self.id:
+            super().save(*args, **kwargs)
+
+        # Generate ticket code if not exists
+        if not self.ticket_code:
+            self.ticket_code = f"TKT-{self.id:04d}"
+            super().save(update_fields=["ticket_code"])
+
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Ticket #{self.id} - {self.title}"
+        return f"{self.ticket_code} - {self.title}"
+
+    class Meta:
+        ordering = ["-created_at"]

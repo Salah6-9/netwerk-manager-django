@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Create Support Ticket</h1>
+
+<form method="post">
+
+    {% csrf_token %}
+
+    <label>Department</label>
+    <br>
+
+    <select id="department">
+
+        <option value="">Select Department</option>
+
+        {% for d in departments %}
+
+        <option value="{{d.id}}">
+            {{d.name}}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <label>Office</label>
+    <br>
+
+    <select id="office" name="office">
+
+        <option value="">Select Office</option>
+
+    </select>
+
+    <br><br>
+
+    <label>User</label>
+    <br>
+
+    <select id="user" name="user">
+
+        <option value="">Select User</option>
+
+    </select>
+
+    <br><br>
+
+    <label>Title</label>
+    <br>
+
+    <input type="text" name="title" required>
+
+    <br><br>
+
+    <label>Description</label>
+    <br>
+
+    <textarea name="description" rows="6"></textarea>
+
+    <br><br>
+
+    <button type="submit">
+        Create Ticket
+    </button>
+
+</form>
+
+<script>
+
+    document.getElementById("department").addEventListener("change", function () {
+
+        let departmentId = this.value;
+
+        fetch(`/support/api/offices/${departmentId}/`)
+            .then(response => response.json())
+            .then(data => {
+
+                let officeSelect = document.getElementById("office");
+
+                officeSelect.innerHTML = "<option>Select Office</option>";
+
+                data.forEach(function (office) {
+
+                    officeSelect.innerHTML +=
+                        `<option value="${office.id}">
+                ${office.name}
+                </option>`;
+
+                });
+
+            });
+
+    });
+
+
+    document.getElementById("office").addEventListener("change", function () {
+
+        let officeId = this.value;
+
+        fetch(`/support/api/users/${officeId}/`)
+            .then(response => response.json())
+            .then(data => {
+
+                let userSelect = document.getElementById("user");
+
+                userSelect.innerHTML = "<option>Select User</option>";
+
+                data.forEach(function (user) {
+
+                    userSelect.innerHTML +=
+                        `<option value="${user.id}">
+                ${user.username}
+                </option>`;
+
+                });
+
+            });
+
+    });
+
+</script>
+
+{% endblock %}

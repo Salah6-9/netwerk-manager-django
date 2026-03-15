@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Ticket {{ ticket.ticket_code }}</h1>
+
+<hr>
+
+<ul>
+
+<li>User: {{ ticket.user }}</li>
+
+<li>Device:
+
+{% if ticket.device %}
+{{ ticket.device.hostname }}
+{% else %}
+-
+{% endif %}
+
+</li>
+
+<li>Status: {{ ticket.status }}</li>
+
+<li>Created: {{ ticket.created_at }}</li>
+
+</ul>
+
+<hr>
+
+<h3>Description</h3>
+
+<p>
+{{ ticket.description }}
+</p>
+
+{% endblock %}
