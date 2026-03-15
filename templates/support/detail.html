@@ -47,6 +47,13 @@
 </form>
 
 {% endif %}
+
+<form method="post" action="{% url 'delete_ticket' ticket.id %}">
+    {% csrf_token %}
+    <button type="submit" onclick="return confirm('Delete this ticket?')">
+        Delete Ticket
+    </button>
+</form>
 <hr>
 
 <h3>Description</h3>
