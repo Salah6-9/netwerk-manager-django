@@ -8,21 +8,21 @@
 
 <ul>
 
-<li>User: {{ ticket.user }}</li>
+    <li>User: {{ ticket.user }}</li>
 
-<li>Device:
+    <li>Device:
 
-{% if ticket.device %}
-{{ ticket.device.hostname }}
-{% else %}
--
-{% endif %}
+        {% if ticket.device %}
+        {{ ticket.device.hostname }}
+        {% else %}
+        -
+        {% endif %}
 
-</li>
+    </li>
 
-<li>Status: {{ ticket.status }}</li>
+    <li>Status: {{ ticket.status }}</li>
 
-<li>Created: {{ ticket.created_at }}</li>
+    <li>Created: {{ ticket.created_at }}</li>
 
 </ul>
 
@@ -31,7 +31,46 @@
 <h3>Description</h3>
 
 <p>
-{{ ticket.description }}
+    {{ ticket.description }}
 </p>
 
+<h2>Conversation</h2>
+
+<div style="border:1px solid #ccc;padding:15px;margin-bottom:20px">
+
+    {% for msg in ticket.messages.all %}
+
+    <div style="margin-bottom:15px">
+
+        <strong>{{ msg.author.username }}</strong>
+        <small>{{ msg.created_at|date:"Y-m-d H:i" }}</small>
+
+        <p>{{ msg.content }}</p>
+
+        <hr>
+
+    </div>
+
+    {% empty %}
+
+    <p>No messages yet.</p>
+
+    {% endfor %}
+
+</div>
+<h3>Add Reply</h3>
+
+<form method="post" action="{% url 'add_ticket_message' ticket.id %}">
+
+    {% csrf_token %}
+
+    <textarea name="content" rows="4" style="width:100%" required></textarea>
+
+    <br><br>
+
+    <button type="submit">
+        Send Reply
+    </button>
+
+</form>
 {% endblock %}

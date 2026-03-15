@@ -13,4 +13,6 @@ urlpatterns = [
     path("api/offices/<int:department_id>/", views.offices_by_department, name="offices_by_department"),
     path("api/users/<int:office_id>/", views.users_by_office, name="users_by_office"),
 
+    path("<int:ticket_id>/message/", views.add_ticket_message, name="add_ticket_message"),
+
 ]
