@@ -343,12 +343,23 @@ def dashboard_stats(request):
 
 @login_required
 def notifications_count(request):
+
     if request.user.is_staff:
-        count = Notification.objects.filter(resolved=False).count()
-    else:
+
         count = Notification.objects.filter(
-            resolved=False,
-            to_user=request.user
+            type="system",
+            resolved=False
         ).count()
 
-    return render(request, "partials/notifications_count.html", {"count": count})
+    else:
+
+        count = Notification.objects.filter(
+            to_user=request.user,
+            resolved=False
+        ).count()
+
+    return render(
+        request,
+        "partials/notifications_count.html",
+        {"count": count}
+    )
