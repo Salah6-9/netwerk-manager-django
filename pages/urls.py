@@ -13,6 +13,7 @@ from .views import (
     resolve_alert,
     delete_alert,
     dashboard_stats,
+    notifications_count,
 )
 from . import views
 
@@ -47,4 +48,6 @@ urlpatterns = [
     path("alerts/<int:pk>/delete/", delete_alert, name="delete_alert"),
 
     path("dashboard/stats/", dashboard_stats, name="dashboard_stats"),
+
+    path("notifications/count/", notifications_count, name="notifications_count"),
 ]

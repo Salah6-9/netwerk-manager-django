@@ -74,14 +74,12 @@
 
                 <div class="flex items-center gap-6">
 
-                    <a href="{% url 'notifications_center' %}" class="relative">
+                    <a href="{% url 'notifications_center' %}">
                         Notifications
-
-                        {% if notifications_count > 0 %}
-                        <span class="ml-2 text-red-500 font-bold">
+                        <span hx-get="/notifications/count/" hx-trigger="every 15s" hx-swap="innerHTML"
+                            hx-on::error="console.warn('Notifications fetch failed')">
                             {{ notifications_count }}
                         </span>
-                        {% endif %}
                     </a>
 
                     <form method="post" action="{% url 'logout' %}">
