@@ -170,7 +170,7 @@ def notifications_center(request):
         "support_notifications": support_notifications,
         "active_alerts": active_alerts,
         "resolved_alerts": resolved_alerts,
-        "is_admin": request.user.is_staff
+        "is_admin": is_admin(request.user)
     }
 
     return render(request, "admin/notifications.html", context)
@@ -186,7 +186,7 @@ def resolve_alert(request, pk):
 
     alert.save()
 
-    return redirect("alerts_center")
+    return redirect("notifications_center")
     
 @login_required
 @user_passes_test(is_admin)
@@ -196,7 +196,7 @@ def delete_alert(request, pk):
 
     alert.delete()
 
-    return redirect("alerts_center")
+    return redirect("notifications_center")
 # ------------------------------------------------------------------------------------------
 
 ## Employee functions --------------------------------------------------------------------
@@ -340,14 +340,12 @@ def dashboard_stats(request):
     }
     return render(request, "partials/dashboard_cards.html", context)
 
-
 @login_required
 def notifications_count(request):
 
-    if request.user.is_staff:
+    if is_admin(request.user):
 
         count = Notification.objects.filter(
-            type="system",
             resolved=False
         ).count()
 
