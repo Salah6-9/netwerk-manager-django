@@ -14,184 +14,206 @@
     <li>MAC: {{ device.mac }}</li>
     <li>Status: {{ device.status }}</li>
     <li>Office: {{ device.office }}</li>
-    <div style="background:#f5f5f5;padding:30px;border:1px solid #ccc;width:fit-content">
-        <li>Agent Token:<code id="agent-token">{{ device.agent_token }}</code></li>
-        <button onclick="copyAgentToken()">Copy</button>
-        <li>Token of User: <code id="user-token">{{ user_token}}</code></li>
-        <button onclick="copyUserToken()">Copy</button>
-    </div>
 
 </ul>
 
-<hr>
-<hr>
 
-<a href="{% url 'create_ticket' %}?device={{ device.id }}">
+    <hr>
+    <hr>
 
-    <button>
-        Create Support Ticket
-    </button>
+    <a href="{% url 'create_ticket' %}?device={{ device.id }}">
 
-</a>
-<h3>Current Metrics</h3>
+        <button>
+            Create Support Ticket
+        </button>
 
-{% if status %}
+    </a>
+    <h3>Current Metrics</h3>
 
-<ul>
-    <li>CPU Usage: {{ status.cpu_usage }} %</li>
-    <li>RAM Usage: {{ status.ram_usage }} %</li>
-    <li>Disk Usage: {{ status.disk_usage }} %</li>
-    <li>Temperature: {{ status.cpu_temp }}</li>
-    <li>Network In: {{ status.network_in }}</li>
-    <li>Network Out: {{ status.network_out }}</li>
-</ul>
+    {% if status %}
 
-{% else %}
+    <ul>
+        <li>CPU Usage: {{ status.cpu_usage }} %</li>
+        <li>RAM Usage: {{ status.ram_usage }} %</li>
+        <li>Disk Usage: {{ status.disk_usage }} %</li>
+        <li>Temperature: {{ status.cpu_temp }}</li>
+        <li>Network In: {{ status.network_in }}</li>
+        <li>Network Out: {{ status.network_out }}</li>
+    </ul>
 
-<p>No metrics available.</p>
+    {% else %}
 
-{% endif %}
+    <p>No metrics available.</p>
 
-<hr>
+    {% endif %}
 
-<h3>Metrics History</h3>
+    <hr>
 
-<table border="1">
+    <h3>Metrics History</h3>
 
-    <tr>
-        <th>CPU</th>
-        <th>RAM</th>
-        <th>Disk</th>
-        <th>Temp</th>
-        <th>Time</th>
-    </tr>
+    <table border="1">
 
-    {% for m in metrics %}
+        <tr>
+            <th>CPU</th>
+            <th>RAM</th>
+            <th>Disk</th>
+            <th>Temp</th>
+            <th>Time</th>
+        </tr>
 
-    <tr>
+        {% for m in metrics %}
 
-        <td>{{ m.cpu_usage }}</td>
-        <td>{{ m.ram_usage }}</td>
-        <td>{{ m.disk_usage }}</td>
-        <td>{{ m.cpu_temp }}</td>
-        <td>{{ m.timestamp }}</td>
+        <tr>
 
-    </tr>
+            <td>{{ m.cpu_usage }}</td>
+            <td>{{ m.ram_usage }}</td>
+            <td>{{ m.disk_usage }}</td>
+            <td>{{ m.cpu_temp }}</td>
+            <td>{{ m.timestamp }}</td>
 
-    {% empty %}
+        </tr>
 
-    <tr>
-        <td colspan="5">No metrics recorded.</td>
-    </tr>
+        {% empty %}
 
-    {% endfor %}
+        <tr>
+            <td colspan="5">No metrics recorded.</td>
+        </tr>
 
-</table>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<h3>CPU Usage</h3>
-<canvas id="cpuChart"></canvas>
+        {% endfor %}
 
-<h3>RAM Usage</h3>
-<canvas id="ramChart"></canvas>
+    </table>
+    <h3>CPU Usage</h3>
+    <canvas id="cpuChart"></canvas>
 
-<h3>Disk Usage</h3>
-<canvas id="diskChart"></canvas>
+    <h3>RAM Usage</h3>
+    <canvas id="ramChart"></canvas>
 
-<h3>Temperature</h3>
-<canvas id="tempChart"></canvas>
-<hr>
+    <h3>Disk Usage</h3>
+    <canvas id="diskChart"></canvas>
 
-<h3>Device Alerts</h3>
+    <h3>Temperature</h3>
+    <canvas id="tempChart"></canvas>
+    <hr>
 
-<table border="1">
+    <h3>Device Alerts</h3>
 
-    <tr>
-        <th>Time</th>
-        <th>Alert</th>
-    </tr>
+    <table border="1">
 
-    {% for alert in alerts %}
+        <tr>
+            <th>Time</th>
+            <th>Alert</th>
+        </tr>
 
-    <tr>
-        <td>{{ alert.created_at }}</td>
-        <td>{{ alert.title }}</td>
-    </tr>
+        {% for alert in alerts %}
 
-    {% empty %}
+        <tr>
+            <td>{{ alert.created_at }}</td>
+            <td>{{ alert.title }}</td>
+        </tr>
 
-    <tr>
-        <td colspan="2">No alerts.</td>
-    </tr>
+        {% empty %}
 
-    {% endfor %}
+        <tr>
+            <td colspan="2">No alerts.</td>
+        </tr>
 
-</table>
+        {% endfor %}
 
-<script>
+    </table>
 
-    const timeData = {{ time_data| safe }};
-    const cpuData = {{ cpu_data| safe }};
-    const ramData = {{ ram_data| safe }};
-    const diskData = {{ disk_data| safe }};
-    const tempData = {{ temp_data| safe }};
+    <script>
 
-    function createChart(elementId, label, data, color) {
+        const chartInstances = {};
 
-        new Chart(document.getElementById(elementId), {
+        function buildChart(canvasId, label, color, timestamps, values) {
 
-            type: "line",
+            const ctx = document.getElementById(canvasId);
 
-            data: {
-                labels: timeData,
-                datasets: [{
-                    label: label,
-                    data: data,
-                    borderColor: color,
-                    fill: false
-                }]
-            },
-
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+            if (chartInstances[canvasId]) {
+                chartInstances[canvasId].destroy();
             }
 
-        });
+            chartInstances[canvasId] = new Chart(ctx, {
 
-    }
+                type: "line",
 
-    createChart("cpuChart", "CPU Usage %", cpuData, "red");
-    createChart("ramChart", "RAM Usage %", ramData, "blue");
-    createChart("diskChart", "Disk Usage %", diskData, "green");
-    createChart("tempChart", "Temperature", tempData, "orange");
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: label,
+                        data: values,
+                        borderColor: color,
+                        backgroundColor: color + "20",
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
 
-</script>
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
 
-<script>
-    function copyUserToken() {
+            });
 
-        const token = document.getElementById("user-token").innerText;
+        }
 
-        navigator.clipboard.writeText(token);
+        function renderCharts(data) {
 
-        alert("Token copied to clipboard");
+            buildChart("cpuChart", "CPU %", "#ef4444", data.timestamps, data.cpu);
 
-    }
+            buildChart("ramChart", "RAM %", "#3b82f6", data.timestamps, data.ram);
 
-    function copyAgentToken() {
+            buildChart("diskChart", "Disk %", "#10b981", data.timestamps, data.disk);
 
-        const token = document.getElementById("agent-token").innerText;
+            buildChart("tempChart", "Temperature", "#f59e0b", data.timestamps, data.temperature);
 
-        navigator.clipboard.writeText(token);
+        }
 
-        alert("Token copied to clipboard");
+        function fetchMetrics() {
 
-    }
+            fetch("/api/device-metrics/{{ device.id }}/?range_minutes=60")
 
-</script>
+                .then(r => r.json())
+                .then(data => renderCharts(data))
+                .catch(err => console.warn("Metrics fetch failed", err));
 
-{% endblock %}
+        }
+
+        fetchMetrics();
+
+        /* update every 20 seconds */
+        setInterval(fetchMetrics, 20000);
+
+    </script>
+
+
+    <script>
+
+        function copyUserToken() {
+
+            const token = document.getElementById("user-token").innerText;
+
+            navigator.clipboard.writeText(token);
+
+            alert("Token copied to clipboard");
+
+        }
+
+        function copyAgentToken() {
+
+            const token = document.getElementById("agent-token").innerText;
+
+            navigator.clipboard.writeText(token);
+
+            alert("Token copied to clipboard");
+
+        }
+
+    </script>
+    {% endblock %}
