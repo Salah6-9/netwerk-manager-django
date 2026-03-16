@@ -5,6 +5,14 @@
     <title>NetWerk Manager</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', 
+        function(evt) {
+            evt.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+    </script>
 </head>
 
 <body>
