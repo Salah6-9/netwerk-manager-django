@@ -3,31 +3,31 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+
   "scripts": {
+    "build": "tailwindcss -i ./static/css/main.css -o ./static/css/output.css --minify",
+    "dev": "tailwindcss -i ./static/css/main.css -o ./static/css/output.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Salah6-9/netwerk-manager-django.git"
   },
+
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+
   "bugs": {
     "url": "https://github.com/Salah6-9/netwerk-manager-django/issues"
   },
+
   "homepage": "https://github.com/Salah6-9/netwerk-manager-django#readme",
+
   "devDependencies": {
     "@tailwindcss/cli": "^4.2.1",
     "tailwindcss": "^4.2.1"
-  }
-}
-{
-  "name": "project",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "tailwindcss -i ./static/css/main.css -o ./static/css/output.css --minify",
-    "dev": "tailwindcss -i ./static/css/main.css -o ./static/css/output.css --watch"
   }
 }
