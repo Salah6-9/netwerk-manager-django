@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div hx-get="/dashboard/stats/" hx-trigger="every 20s" hx-swap="innerHTML">
 
+    {% include "partials/dashboard_cards.html" %}
+
+</div>
 <h1>Network Dashboard</h1>
 
 <!-- ============================= -->
