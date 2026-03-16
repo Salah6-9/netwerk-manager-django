@@ -23,3 +23,11 @@
     "tailwindcss": "^4.2.1"
   }
 }
+{
+  "name": "project",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tailwindcss -i ./static/css/main.css -o ./static/css/output.css --minify",
+    "dev": "tailwindcss -i ./static/css/main.css -o ./static/css/output.css --watch"
+  }
+}
