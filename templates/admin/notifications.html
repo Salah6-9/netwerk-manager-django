@@ -33,11 +33,10 @@
         {{ support_notifications|length }}
     </div>
 
-
-
-    {% endif %}
 </div>
+{% endif %}
 <hr>
+
 
 <h2>Monitoring Alerts</h2>
 
@@ -46,17 +45,32 @@
         <th>Time</th>
         <th>Device</th>
         <th>Alert</th>
+        <th>Actions</th>
     </tr>
 
-    {% for alert in alerts %}
+    {% for alert in monitoring_alerts %}
     <tr>
         <td>{{ alert.created_at }}</td>
-        <td>{{ alert.device.hostname }}</td>
+        <td>{{ alert.device.hostname | default:"Unknown Device" }}</td>
         <td>{{ alert.title }}</td>
+        <td>
+            {%if is_admin%}
+            {% if not alert.resolved %}
+            <form method="post" action="{% url 'resolve_alert' alert.id %}">
+                {% csrf_token %}
+                <button style="color:green">Resolve</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'delete_notification' alert.id %}">
+                {% csrf_token %}
+                <button style="color:red">Delete</button>
+            </form>
+            {%endif%}
+        </td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="3">No monitoring alerts</td>
+        <td colspan="4">No monitoring alerts</td>
     </tr>
     {% endfor %}
 </table>
@@ -69,16 +83,25 @@
     <tr>
         <th>Time</th>
         <th>Message</th>
+        <th>Actions</th>
     </tr>
 
     {% for n in support_notifications %}
     <tr>
         <td>{{ n.created_at }}</td>
         <td>{{ n.content }}</td>
+        <td>
+            {%if is_admin%}
+            <form method="post" action="{% url 'delete_notification' n.id %}">
+                {% csrf_token %}
+                <button style="color:red">Delete</button>
+            </form>
+            {%endif%}
+        </td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="2">No support notifications</td>
+        <td colspan="3">No support notifications</td>
     </tr>
     {% endfor %}
 </table>

@@ -11,7 +11,7 @@ from .views import (
     setup_agent,
     notifications_center,
     resolve_alert,
-    delete_alert,
+    delete_notification,
     dashboard_stats,
     notifications_count,
 )
@@ -45,7 +45,7 @@ urlpatterns = [
     # Monitoring Alert Actions
     path("alerts/<int:pk>/resolve/", resolve_alert, name="resolve_alert"),
 
-    path("alerts/<int:pk>/delete/", delete_alert, name="delete_alert"),
+    path("notifications/<int:pk>/delete/", views.delete_notification, name="delete_notification"),
 
     path("dashboard/stats/", dashboard_stats, name="dashboard_stats"),
 

@@ -179,22 +179,24 @@ def notifications_center(request):
 @user_passes_test(is_admin)
 def resolve_alert(request, pk):
 
-    alert = Notification.objects.get(id=pk)
+    notification = Notification.objects.get(id=pk)
 
-    alert.resolved = True
-    alert.resolved_at = timezone.now()
+    notification.resolved = True
+    notification.resolved_at = timezone.now()
 
-    alert.save()
+    notification.save()
 
     return redirect("notifications_center")
     
 @login_required
 @user_passes_test(is_admin)
-def delete_alert(request, pk):
+def delete_notification(request, pk):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
 
-    alert = Notification.objects.get(id=pk)
+    notification = get_object_or_404(Notification, id=pk)
 
-    alert.delete()
+    notification.delete()
 
     return redirect("notifications_center")
 # ------------------------------------------------------------------------------------------
