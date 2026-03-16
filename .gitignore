@@ -23,3 +23,22 @@ staticfiles/
 
 # agent
 agent/config.json
+
+#Node
+node_modules/static/css/output.css
+
+# Tailwind build
+static/css/output.css
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Logs
+*.log
+
+#OS
+.DS_Store

@@ -3,83 +3,110 @@
 
 <head>
     <title>NetWerk Manager</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
 </head>
 
-<body>
+<body class="bg-gray-100 min-h-screen">
 
-    <header>
-
-        <h2>NetWerk Manager</h2>
-
-        <div>
-
-            Logged in as {{ request.user }}
-
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-
-        </div>
-        <li>
-            <a href="{% url 'notifications_center' %}">
-                Notifications
-                {% if notifications_count > 0 %}
-                <span style="color:red;font-weight:bold">
-                    {{ notifications_count }}
-                </span>
-                {% endif %}
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'tickets_list' %}">
-                Support Tickets
-            </a>
-        </li>
-
-    </header>
-
-    <hr>
-
-    <div style="display:flex">
+    <div class="flex">
 
         <!-- Sidebar -->
-        <aside style="width:250px">
+        <aside class="w-64 bg-gray-900 text-white min-h-screen p-6">
 
-            <h3>Navigation</h3>
+            <h2 class="text-xl font-bold mb-8">
+                NetWerk Manager
+            </h2>
 
-            <ul>
+            <nav class="space-y-3">
 
-                <li><a href="/dashboard/">Dashboard</a></li>
+                <a href="/dashboard/" class="block hover:text-gray-300">
+                    Dashboard
+                </a>
 
-                <li>
-                    <a href="/notifications/">Notifications</a>
-                </li>
+                <a href="/notifications/" class="block hover:text-gray-300">
+                    Notifications
+                </a>
+
                 {% if request.user.is_staff %}
 
-                <li><a href="/devices/">Devices</a></li>
+                <a href="/devices/" class="block hover:text-gray-300">
+                    Devices
+                </a>
 
-                <li><a href="/enrollments/">Enrollment Requests</a></li>
-
+                <a href="/enrollments/" class="block hover:text-gray-300">
+                    Enrollment Requests
+                </a>
 
                 {% else %}
 
-                <li><a href="/setup-agent/">Setup Agent</a></li>
+                <a href="/setup-agent/" class="block hover:text-gray-300">
+                    Setup Agent
+                </a>
 
                 {% endif %}
 
-            </ul>
+                <a href="{% url 'tickets_list' %}" class="block hover:text-gray-300">
+                    Support Tickets
+                </a>
+
+            </nav>
 
         </aside>
 
-        <!-- Main Content -->
 
-        <main style="padding:20px; flex:1">
+        <!-- Main Area -->
+        <div class="flex-1 flex flex-col">
 
-            {% block content %}
-            {% endblock %}
+            <!-- Topbar -->
+            <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
-        </main>
+                <div class="font-semibold text-gray-700">
+                    Logged in as {{ request.user }}
+                </div>
+
+                <div class="flex items-center gap-6">
+
+                    <a href="{% url 'notifications_center' %}">
+                        Notifications
+                        <span hx-get="/notifications/count/" hx-trigger="every 15s" hx-swap="innerHTML"
+                            hx-on::error="console.warn('Notifications fetch failed')">
+                            {{ notifications_count }}
+                        </span>
+                    </a>
+
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="text-red-600 hover:text-red-800">
+                            Logout
+                        </button>
+                    </form>
+
+                </div>
+
+            </header>
+
+
+            <!-- Content Wrapper -->
+            <main class="flex-1 p-8">
+
+                <div class="max-w-7xl mx-auto">
+
+                    {% block content %}
+                    {% endblock %}
+
+                </div>
+
+            </main>
+
+        </div>
 
     </div>
 

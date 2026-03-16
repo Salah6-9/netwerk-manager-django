@@ -326,3 +326,40 @@ def dashboard_status_api(request):
         }
 
     return JsonResponse(data)
+
+
+@login_required
+def dashboard_stats(request):
+    
+    context = {
+        "total_devices": Device.objects.count(),
+        "total_online_devices": Device.objects.filter(status="online").count(),
+        "total_offline_devices": Device.objects.filter(status="offline").count(),
+        "total_unknown_devices": Device.objects.filter(status="unknown").count(),
+        "notifications": Notification.objects.filter(resolved=False).count(),
+    }
+    return render(request, "partials/dashboard_cards.html", context)
+
+
+@login_required
+def notifications_count(request):
+
+    if request.user.is_staff:
+
+        count = Notification.objects.filter(
+            type="system",
+            resolved=False
+        ).count()
+
+    else:
+
+        count = Notification.objects.filter(
+            to_user=request.user,
+            resolved=False
+        ).count()
+
+    return render(
+        request,
+        "partials/notifications_count.html",
+        {"count": count}
+    )
