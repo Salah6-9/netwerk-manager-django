@@ -9,11 +9,13 @@ from .views import (
     devices_list,
     device_details,
     setup_agent,
-    notifications_center,
-    resolve_alert,
-    delete_notification,
     dashboard_stats,
+)
+from notifications.views import (   
+    delete_notification,
     notifications_count,
+    notifications_center,
+    resolve_notification,
 )
 from . import views
 
@@ -43,11 +45,8 @@ urlpatterns = [
     path("notifications/", notifications_center, name="notifications_center"),
 
     # Monitoring Alert Actions
-    path("alerts/<int:pk>/resolve/", resolve_alert, name="resolve_alert"),
 
-    path("notifications/<int:pk>/delete/", views.delete_notification, name="delete_notification"),
 
     path("dashboard/stats/", dashboard_stats, name="dashboard_stats"),
 
-    path("notifications/count/", notifications_count, name="notifications_count"),
 ]

@@ -19,4 +19,6 @@ urlpatterns = [
 
     path("<int:ticket_id>/delete/", views.delete_ticket, name="delete_ticket"), 
 
+    
+
 ]

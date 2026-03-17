@@ -286,3 +286,5 @@ def delete_ticket(request, ticket_id):
     ticket.delete()
 
     return redirect("tickets_list")
+
+

@@ -19,6 +19,7 @@
 <th>Title</th>
 <th>Status</th>
 <th>Created</th>
+<th>Actions</th>
 </tr>
 
 {% for ticket in tickets %}
@@ -55,6 +56,15 @@
 
 <td>
 {{ ticket.created_at }}
+</td>
+
+<td>
+   
+<form method="post" action="{% url 'delete_ticket' ticket.id %}">
+    {% csrf_token %}
+    <button style="color:red">Delete</button>
+</form>
+
 </td>
 
 </tr>
