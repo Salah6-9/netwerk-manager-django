@@ -8,6 +8,8 @@ from .models import SupportTicket, TicketMessage
 from devices.models import Device
 from users.models import Office, Department, Profile
 from notifications.models import Notification
+from pages.views import is_admin
+
 
 User = get_user_model()
 
@@ -136,13 +138,13 @@ def create_ticket(request):
         # Notification Logic
         # -----------------
 
-        if request.user.is_staff:
+        if request.user.is_staff :
             recipients = [user]
         else:
             recipients = User.objects.filter(is_staff=True)
 
         for r in recipients:
-            if r != request.user:
+            if r == request.user:
 
                 Notification.objects.create(
                     title="New Support Ticket",
@@ -227,21 +229,24 @@ def add_ticket_message(request, ticket_id):
         )
 
         # Notification logic
-
-        if request.user.is_staff:
-            recipient = ticket.user
+        recipients = []
+        if is_admin(request.user):
+            recipients = [ticket.user]
         else:
-            recipient = User.objects.filter(is_staff=True).first()
+            recipients = list(User.objects.filter(is_staff=True).all())
 
-        if recipient and recipient != request.user:
+      
+        if recipients:
 
-            Notification.objects.create(
-                title="New reply on ticket",
-                content=f"{request.user.username} replied to ticket {ticket.ticket_code}",
-                type="support",
-                to_user=recipient,
-                device=ticket.device
-            )
+            for r in recipients:
+                if r != request.user:
+                    Notification.objects.create(
+                        title="New reply on ticket",
+                        content=f"{request.user.username} replied to ticket {ticket.ticket_code}",
+                        type="support",
+                        to_user=r,
+                    device=ticket.device
+                )
 
     return redirect("ticket_detail", ticket_id=ticket.id)
 

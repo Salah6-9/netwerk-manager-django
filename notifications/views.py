@@ -7,9 +7,9 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_POST
 # Create your views here.
-
 def is_admin(user):
     return user.is_superuser or user.groups.filter(name="Admin").exists()
+from django.db.models import Q
 
 
 @login_required
@@ -19,6 +19,8 @@ def notifications_count(request):
 
         count = Notification.objects.filter(
             resolved=False
+        ).filter(
+            Q(type="system") | Q(to_user=request.user)
         ).count()
 
     else:

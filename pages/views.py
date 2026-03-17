@@ -14,6 +14,8 @@ from django.utils import timezone
 from django.http import JsonResponse
 from datetime import timedelta
 from notifications.views import resolve_notification, delete_notification, notifications_count
+from django.db.models import Q
+from notifications.views import is_admin
 
 
 def is_admin(user):
