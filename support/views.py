@@ -9,6 +9,7 @@ from devices.models import Device
 from users.models import Office, Department, Profile
 from notifications.models import Notification
 from pages.views import is_admin
+from django.contrib import messages
 
 
 User = get_user_model()
@@ -53,7 +54,7 @@ def ticket_detail(request, ticket_id):
 # -------------------------
 # Create Ticket
 # -------------------------
-
+from django.contrib import messages
 @login_required
 def create_ticket(request):
 
@@ -68,18 +69,28 @@ def create_ticket(request):
 
     if device_id:
 
-        device = get_object_or_404(
-            Device.objects.select_related(
-                "user__profile__office__department"
-            ),
-            id=device_id
-        )
+        device = Device.objects.select_related(
+            "user__profile__office__department"
+        ).filter(id=device_id).first()
 
-        if device.user and device.user.profile and device.user.profile.office:
+        if not device:
+            messages.error(request, "Device not found")
+            return redirect("dashboard")
 
-            selected_user = device.user
-            selected_office = device.user.profile.office
-            selected_department = selected_office.department
+        profile = Profile.objects.filter(user=device.user).select_related("office__department").first()
+
+        if not profile:
+            messages.error(request, "This device's user does not have a profile")
+            return redirect("device_details", pk=device.id)
+
+        if not profile.office:
+            messages.error(request, "User profile is not linked to an office")
+            return redirect("device_details", pk=device.id)
+
+        # فقط إذا كان كل شيء صحيح
+        selected_user = device.user
+        selected_office = profile.office
+        selected_department = profile.office.department
 
     if request.method == "POST":
 
@@ -100,11 +111,13 @@ def create_ticket(request):
                 department=department
             )
 
-            profile = get_object_or_404(
-                Profile.objects.select_related("user"),
+            profile = Profile.objects.filter(
                 user_id=user_id,
                 office=office
-            )
+            ).first()
+            if not profile:
+                messages.error(request, "Profile not found")
+                return redirect("device_details", pk=device_id)
 
             user = profile.user
 
@@ -112,12 +125,14 @@ def create_ticket(request):
             user = request.user
 
         # validate device ownership
-        if device_id:
-            device = get_object_or_404(
-                Device,
-                id=device_id,
-                user=user
-            )
+        device = Device.objects.filter(
+            id=device_id,
+            user=user
+        ).first()
+
+        if not device:
+            messages.error(request, "You are not allowed to create a ticket for this device")
+            return redirect("device_details", pk=device_id)
 
         # Create ticket
         ticket = SupportTicket.objects.create(
@@ -144,7 +159,7 @@ def create_ticket(request):
             recipients = User.objects.filter(is_staff=True)
 
         for r in recipients:
-            if r == request.user:
+            if r != request.user:
 
                 Notification.objects.create(
                     title="New Support Ticket",

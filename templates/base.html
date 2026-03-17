@@ -11,11 +11,25 @@
     <script src="https://unpkg.com/alpinejs" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
 </head>
 
 <body class="bg-gray-100 min-h-screen">
 
+{% if messages %}
+  <div style="margin:10px;">
+    {% for message in messages %}
+      <div style="
+        padding:10px;
+        margin-bottom:5px;
+        border:1px solid #ccc;
+        background-color: {% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %};
+        color: {% if message.tags == 'error' %}#721c24{% else %}#155724{% endif %};
+      ">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
     <div class="flex">
 
         <!-- Sidebar -->
@@ -52,7 +66,11 @@
                 </a>
 
                 {% endif %}
-
+                {% if request.user.is_staff %}
+                <a href="/admin/" class="block hover:text-gray-300">
+                    Admin Panel
+                </a>
+                {% endif %}
                 <a href="{% url 'tickets_list' %}" class="block hover:text-gray-300">
                     Support Tickets
                 </a>
