@@ -117,22 +117,29 @@ def create_ticket(request):
             ).first()
             if not profile:
                 messages.error(request, "Profile not found")
-                return redirect("device_details", pk=device_id)
+                # Safe redirect if device_id is missing
+                if device_id:
+                    return redirect("device_details", pk=device_id)
+                return redirect("dashboard")
 
             user = profile.user
 
         else:
             user = request.user
 
-        # validate device ownership
-        device = Device.objects.filter(
-            id=device_id,
-            user=user
-        ).first()
+        # Validate device ownership ONLY if device_id is provided
+        device = None
+        if device_id:
+            device = Device.objects.filter(
+                id=device_id,
+                user=user
+            ).first()
 
-        if not device:
-            messages.error(request, "You are not allowed to create a ticket for this device")
-            return redirect("device_details", pk=device_id)
+            if not device:
+                messages.error(request, "You are not allowed to create a ticket for this device")
+                return redirect("device_details", pk=device_id)
+        
+        # If no device_id was provided, device remains None, which is allowed by the model
 
         # Create ticket
         ticket = SupportTicket.objects.create(
@@ -166,7 +173,8 @@ def create_ticket(request):
                     content=f"Ticket {ticket.ticket_code} created",
                     type="support",
                     to_user=r,
-                    device=device
+                    device=device,
+                    ticket=ticket
                 )
 
         return redirect("tickets_list")
@@ -260,8 +268,9 @@ def add_ticket_message(request, ticket_id):
                         content=f"{request.user.username} replied to ticket {ticket.ticket_code}",
                         type="support",
                         to_user=r,
-                    device=ticket.device
-                )
+                        device=ticket.device,
+                        ticket=ticket
+                    )
 
     return redirect("ticket_detail", ticket_id=ticket.id)
 

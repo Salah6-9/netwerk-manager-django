@@ -28,6 +28,13 @@ class Notification(models.Model):
         null=True,
         blank=True
     )    
+    ticket = models.ForeignKey(
+        'support.SupportTicket',
+        on_delete=models.CASCADE,
+        related_name="linked_notifications",
+        null=True,
+        blank=True
+    )
     resolved = models.BooleanField(default=False)
     resolved_at = models.DateTimeField(null=True, blank=True)
 

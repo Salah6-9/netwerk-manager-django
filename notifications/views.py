@@ -93,3 +93,13 @@ def delete_notification(request, pk):
     notification.delete()
 
     return redirect("notifications_center")
+
+@login_required
+@require_POST
+def delete_all_notifications(request):
+    if is_admin(request.user):
+        Notification.objects.all().delete()
+    else:
+        Notification.objects.filter(to_user=request.user).delete()
+    
+    return redirect("notifications_center")
