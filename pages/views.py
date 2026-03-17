@@ -13,6 +13,9 @@ import os
 from django.utils import timezone
 from django.http import JsonResponse
 from datetime import timedelta
+from notifications.views import resolve_notification, delete_notification, notifications_count
+from django.db.models import Q
+from notifications.views import is_admin
 
 
 def is_admin(user):
@@ -142,61 +145,7 @@ def device_details(request, pk):
     return render(request, "admin/device_details.html", context)
 
 #Device alerts
-@login_required
-def notifications_center(request):
-    if not is_admin(request.user):
-        notifications = Notification.objects.select_related(
-            "device",
-            "to_user"
-        ).filter(to_user=request.user).order_by("-created_at")
 
-    else:
-        notifications = Notification.objects.select_related(
-            "device",
-            "to_user"
-        ).order_by("-created_at")
-
-    # Monitoring alerts
-    monitoring_alerts = notifications.filter(type="system")
-
-    # Support notifications
-    support_notifications = notifications.filter(type="support")
-
-    active_alerts = monitoring_alerts.filter(resolved=False).count()
-    resolved_alerts = monitoring_alerts.filter(resolved=True).count()
-
-    context = {
-        "monitoring_alerts": monitoring_alerts,
-        "support_notifications": support_notifications,
-        "active_alerts": active_alerts,
-        "resolved_alerts": resolved_alerts,
-        "is_admin": is_admin(request.user)
-    }
-
-    return render(request, "admin/notifications.html", context)
-
-@login_required
-@user_passes_test(is_admin)
-def resolve_alert(request, pk):
-
-    alert = Notification.objects.get(id=pk)
-
-    alert.resolved = True
-    alert.resolved_at = timezone.now()
-
-    alert.save()
-
-    return redirect("notifications_center")
-    
-@login_required
-@user_passes_test(is_admin)
-def delete_alert(request, pk):
-
-    alert = Notification.objects.get(id=pk)
-
-    alert.delete()
-
-    return redirect("notifications_center")
 # ------------------------------------------------------------------------------------------
 
 ## Employee functions --------------------------------------------------------------------
@@ -340,24 +289,3 @@ def dashboard_stats(request):
     }
     return render(request, "partials/dashboard_cards.html", context)
 
-@login_required
-def notifications_count(request):
-
-    if is_admin(request.user):
-
-        count = Notification.objects.filter(
-            resolved=False
-        ).count()
-
-    else:
-
-        count = Notification.objects.filter(
-            to_user=request.user,
-            resolved=False
-        ).count()
-
-    return render(
-        request,
-        "partials/notifications_count.html",
-        {"count": count}
-    )

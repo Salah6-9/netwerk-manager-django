@@ -9,8 +9,12 @@ def notifications(request):
 
     if is_admin(request.user):
 
+        # Admins see all system alerts + notifications specifically for them
+        from django.db.models import Q
         count = Notification.objects.filter(
             resolved=False
+        ).filter(
+            Q(type="system") | Q(to_user=request.user)
         ).count()
 
     else:
