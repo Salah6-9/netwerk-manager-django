@@ -4,14 +4,23 @@
 
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Notifications Center</h1>
-    <form method="post" action="{% url 'delete_all_notifications' %}"
-        onsubmit="return confirm('Are you sure you want to delete ALL notifications? This action cannot be undone.');">
-        {% csrf_token %}
-        <button type="submit"
-            class="bg-red-600 hover:bg-red-700  font-bold py-2 px-4 rounded transition duration-200">
-            Delete All Notifications
-        </button>
-    </form>
+    <div class="flex gap-2">
+        <form method="post" action="{% url 'mark_all_read' %}">
+            {% csrf_token %}
+            <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                Mark All as Read
+            </button>
+        </form>
+        <form method="post" action="{% url 'delete_all_notifications' %}"
+            onsubmit="return confirm('Are you sure you want to delete ALL notifications? This action cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit"
+                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                Delete All Notifications
+            </button>
+        </form>
+    </div>
 </div>
 <h1>System Alerts</h1>
 
@@ -57,7 +66,7 @@
     </tr>
 
     {% for alert in monitoring_alerts %}
-    <tr>
+    <tr class="{% if not alert.is_read %}bg-blue-50/30{% endif %}">
         <td>{{ alert.created_at|date:"Y-m-d H:i" }}</td>
         <td>
             {% if alert.device %}
@@ -70,11 +79,14 @@
         </td>
         <td>
             {% if alert.device %}
-            <a href="{% url 'device_details' alert.device.id %}" class="text-blue-600 hover:underline">
+            <a href="{% url 'mark_notification_read' alert.id %}" class="text-blue-600 hover:underline {% if not alert.is_read %}font-bold{% endif %}">
                 {{ alert.title }}
             </a>
             {% else %}
-            {{ alert.title }}
+            <span class="{% if not alert.is_read %}font-bold{% endif %}">{{ alert.title }}</span>
+            {% endif %}
+            {% if not alert.is_read %}
+            <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-1" title="Unread"></span>
             {% endif %}
         </td>
         <td>
@@ -111,15 +123,18 @@
     </tr>
 
     {% for n in support_notifications %}
-    <tr class="hover:bg-gray-50">
+    <tr class="hover:bg-gray-50 {% if not n.is_read %}bg-blue-50/30{% endif %}">
         <td class="p-2 border text-sm">{{ n.created_at|date:"Y-m-d H:i" }}</td>
         <td class="p-2 border">
             {% if n.ticket %}
-            <a href="{% url 'ticket_detail' n.ticket.id %}" class="text-blue-600 hover:underline">
+            <a href="{% url 'mark_notification_read' n.id %}" class="text-blue-600 hover:underline {% if not n.is_read %}font-bold{% endif %}">
                 {{ n.content }}
             </a>
             {% else %}
-            {{ n.content }}
+            <span class="{% if not n.is_read %}font-bold{% endif %}">{{ n.content }}</span>
+            {% endif %}
+            {% if not n.is_read %}
+            <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-1" title="Unread"></span>
             {% endif %}
         </td>
         <td class="p-2 border">

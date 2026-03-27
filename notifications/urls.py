@@ -8,4 +8,5 @@ urlpatterns = [
     path("notifications/delete-all/", views.delete_all_notifications, name="delete_all_notifications"),
     path("dropdown/", views.notifications_dropdown, name="notifications_dropdown"),
     path("mark-as-read/<int:pk>/", views.mark_notification_read, name="mark_notification_read"),
+    path("mark-all-read/", views.mark_all_read, name="mark_all_read"),
 ]

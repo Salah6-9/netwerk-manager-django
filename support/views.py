@@ -317,3 +317,18 @@ def delete_ticket(request, ticket_id):
     return redirect("tickets_list")
 
 
+@login_required
+def delete_all_tickets(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    
+    if not is_admin(request.user):
+        return HttpResponseForbidden("You are not authorized to perform this action")
+    
+    SupportTicket.objects.all().delete()
+    TicketMessage.objects.all().delete()
+
+    
+    return redirect("tickets_list")
+
+

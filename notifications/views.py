@@ -19,7 +19,7 @@ def notifications_count(request):
     if is_admin(request.user):
 
         count = Notification.objects.filter(
-            resolved=False
+            is_read=False
         ).filter(
             Q(type="system") | Q(to_user=request.user)
         ).count()
@@ -28,7 +28,7 @@ def notifications_count(request):
 
         count = Notification.objects.filter(
             to_user=request.user,
-            resolved=False
+            is_read=False
         ).count()
 
     return render(
@@ -133,4 +133,14 @@ def mark_notification_read(request, pk):
     if notification.device:
         return redirect('device_details', pk=notification.device.id)
         
+    return redirect('notifications_center')
+
+@login_required
+@require_POST
+def mark_all_read(request):
+    if is_admin(request.user):
+        Notification.objects.filter(is_read=False).update(is_read=True)
+    else:
+        Notification.objects.filter(to_user=request.user, is_read=False).update(is_read=True)
+    
     return redirect('notifications_center')
