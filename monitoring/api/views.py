@@ -55,6 +55,12 @@ class MetricsIngestView(APIView):
             device=device,
             defaults=data
         )
+
+        # Update heartbeat and recalculate status
+        from django.utils import timezone
+        device.last_agent_heartbeat = timezone.now()
+        device.update_status()
+
         # check alerts
         check_device_alerts(device, metric)
 

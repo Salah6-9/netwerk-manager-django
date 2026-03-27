@@ -7,213 +7,224 @@
 <h3>Device Information</h3>
 
 <ul>
-    <li>User: {{ device.user }}</li>
+    <li>User: {{ device.user.username }}</li>
     <li>OS: {{ device.os }}</li>
     <li>Hostname: {{ device.hostname }}</li>
     <li>IP: {{ device.ip }}</li>
     <li>MAC: {{ device.mac }}</li>
-    <li>Status: {{ device.status }}</li>
+    <li>
+        Status:
+        {% if device.status == "online" %}
+        <span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">● Online</span>
+        {% elif device.status == "offline" %}
+        <span class="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">● Offline</span>
+        {% else %}
+        <span class="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">● Unknown</span>
+        {% endif %}
+    </li>
+    <li>Last Agent Heartbeat: {{ device.last_agent_heartbeat|default:"Never" }}</li>
+    <li>Last Network Scan: {{ device.last_scan_seen|default:"Never" }}</li>
     <li>Office: {{ device.office }}</li>
 
 </ul>
 
 
-    <hr>
-    <hr>
+<hr>
+<hr>
 
-    <a href="{% url 'create_ticket' %}?device={{ device.id }}">
+<a href="{% url 'create_ticket' %}?device={{ device.id }}">
 
-        <button>
-            Create Support Ticket
-        </button>
+    <button>
+        Create Support Ticket
+    </button>
 
-    </a>
-    <h3>Current Metrics</h3>
+</a>
+<h3>Current Metrics</h3>
 
-    {% if status %}
+{% if status %}
 
-    <ul>
-        <li>CPU Usage: {{ status.cpu_usage }} %</li>
-        <li>RAM Usage: {{ status.ram_usage }} %</li>
-        <li>Disk Usage: {{ status.disk_usage }} %</li>
-        <li>Temperature: {{ status.cpu_temp }}</li>
-        <li>Network In: {{ status.network_in }}</li>
-        <li>Network Out: {{ status.network_out }}</li>
-    </ul>
+<ul>
+    <li>CPU Usage: {{ status.cpu_usage }} %</li>
+    <li>RAM Usage: {{ status.ram_usage }} %</li>
+    <li>Disk Usage: {{ status.disk_usage }} %</li>
+    <li>Temperature: {{ status.cpu_temp }}</li>
+    <li>Network In: {{ status.network_in }}</li>
+    <li>Network Out: {{ status.network_out }}</li>
+</ul>
 
-    {% else %}
+{% else %}
 
-    <p>No metrics available.</p>
+<p>No metrics available.</p>
 
-    {% endif %}
+{% endif %}
 
-    <hr>
+<hr>
 
-    <h3>Metrics History</h3>
+<h3>Metrics History</h3>
 
-    <table border="1">
+<table border="1">
 
-        <tr>
-            <th>CPU</th>
-            <th>RAM</th>
-            <th>Disk</th>
-            <th>Temp</th>
-            <th>Time</th>
-        </tr>
+    <tr>
+        <th>CPU</th>
+        <th>RAM</th>
+        <th>Disk</th>
+        <th>Temp</th>
+        <th>Time</th>
+    </tr>
 
-        {% for m in metrics %}
+    {% for m in metrics %}
 
-        <tr>
+    <tr>
 
-            <td>{{ m.cpu_usage }}</td>
-            <td>{{ m.ram_usage }}</td>
-            <td>{{ m.disk_usage }}</td>
-            <td>{{ m.cpu_temp }}</td>
-            <td>{{ m.timestamp }}</td>
+        <td>{{ m.cpu_usage }}</td>
+        <td>{{ m.ram_usage }}</td>
+        <td>{{ m.disk_usage }}</td>
+        <td>{{ m.cpu_temp }}</td>
+        <td>{{ m.timestamp }}</td>
 
-        </tr>
+    </tr>
 
-        {% empty %}
+    {% empty %}
 
-        <tr>
-            <td colspan="5">No metrics recorded.</td>
-        </tr>
+    <tr>
+        <td colspan="5">No metrics recorded.</td>
+    </tr>
 
-        {% endfor %}
+    {% endfor %}
 
-    </table>
-    <h3>CPU Usage</h3>
-    <canvas id="cpuChart"></canvas>
+</table>
+<h3>CPU Usage</h3>
+<canvas id="cpuChart"></canvas>
 
-    <h3>RAM Usage</h3>
-    <canvas id="ramChart"></canvas>
+<h3>RAM Usage</h3>
+<canvas id="ramChart"></canvas>
 
-    <h3>Disk Usage</h3>
-    <canvas id="diskChart"></canvas>
+<h3>Disk Usage</h3>
+<canvas id="diskChart"></canvas>
 
-    <h3>Temperature</h3>
-    <canvas id="tempChart"></canvas>
-    <hr>
+<h3>Temperature</h3>
+<canvas id="tempChart"></canvas>
+<hr>
 
-    <h3>Device Alerts</h3>
+<h3>Device Alerts</h3>
 
-    <table border="1">
+<table border="1">
 
-        <tr>
-            <th>Time</th>
-            <th>Alert</th>
-        </tr>
+    <tr>
+        <th>Time</th>
+        <th>Alert</th>
+    </tr>
 
-        {% for alert in alerts %}
+    {% for alert in alerts %}
 
-        <tr>
-            <td>{{ alert.created_at }}</td>
-            <td>{{ alert.title }}</td>
-        </tr>
+    <tr>
+        <td>{{ alert.created_at }}</td>
+        <td>{{ alert.title }}</td>
+    </tr>
 
-        {% empty %}
+    {% empty %}
 
-        <tr>
-            <td colspan="2">No alerts.</td>
-        </tr>
+    <tr>
+        <td colspan="2">No alerts.</td>
+    </tr>
 
-        {% endfor %}
+    {% endfor %}
 
-    </table>
+</table>
 
-    <script>
+<script>
 
-        const chartInstances = {};
+    const chartInstances = {};
 
-        function buildChart(canvasId, label, color, timestamps, values) {
+    function buildChart(canvasId, label, color, timestamps, values) {
 
-            const ctx = document.getElementById(canvasId);
+        const ctx = document.getElementById(canvasId);
 
-            if (chartInstances[canvasId]) {
-                chartInstances[canvasId].destroy();
-            }
+        if (chartInstances[canvasId]) {
+            chartInstances[canvasId].destroy();
+        }
 
-            chartInstances[canvasId] = new Chart(ctx, {
+        chartInstances[canvasId] = new Chart(ctx, {
 
-                type: "line",
+            type: "line",
 
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: label,
-                        data: values,
-                        borderColor: color,
-                        backgroundColor: color + "20",
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
+            data: {
+                labels: timestamps,
+                datasets: [{
+                    label: label,
+                    data: values,
+                    borderColor: color,
+                    backgroundColor: color + "20",
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
 
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            min: 0,
-                            max: 100
-                        }
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100
                     }
                 }
+            }
 
-            });
+        });
 
-        }
+    }
 
-        function renderCharts(data) {
+    function renderCharts(data) {
 
-            buildChart("cpuChart", "CPU %", "#ef4444", data.timestamps, data.cpu);
+        buildChart("cpuChart", "CPU %", "#ef4444", data.timestamps, data.cpu);
 
-            buildChart("ramChart", "RAM %", "#3b82f6", data.timestamps, data.ram);
+        buildChart("ramChart", "RAM %", "#3b82f6", data.timestamps, data.ram);
 
-            buildChart("diskChart", "Disk %", "#10b981", data.timestamps, data.disk);
+        buildChart("diskChart", "Disk %", "#10b981", data.timestamps, data.disk);
 
-            buildChart("tempChart", "Temperature", "#f59e0b", data.timestamps, data.temperature);
+        buildChart("tempChart", "Temperature", "#f59e0b", data.timestamps, data.temperature);
 
-        }
+    }
 
-        function fetchMetrics() {
+    function fetchMetrics() {
 
-            fetch("/api/device-metrics/{{ device.id }}/?range_minutes=60")
+        fetch("/api/device-metrics/{{ device.id }}/?range_minutes=60")
 
-                .then(r => r.json())
-                .then(data => renderCharts(data))
-                .catch(err => console.warn("Metrics fetch failed", err));
+            .then(r => r.json())
+            .then(data => renderCharts(data))
+            .catch(err => console.warn("Metrics fetch failed", err));
 
-        }
+    }
 
-        fetchMetrics();
+    fetchMetrics();
 
-        /* update every 20 seconds */
-        setInterval(fetchMetrics, 20000);
+    /* update every 20 seconds */
+    setInterval(fetchMetrics, 20000);
 
-    </script>
+</script>
 
 
-    <script>
+<script>
 
-        function copyUserToken() {
+    function copyUserToken() {
 
-            const token = document.getElementById("user-token").innerText;
+        const token = document.getElementById("user-token").innerText;
 
-            navigator.clipboard.writeText(token);
+        navigator.clipboard.writeText(token);
 
-            alert("Token copied to clipboard");
+        alert("Token copied to clipboard");
 
-        }
+    }
 
-        function copyAgentToken() {
+    function copyAgentToken() {
 
-            const token = document.getElementById("agent-token").innerText;
+        const token = document.getElementById("agent-token").innerText;
 
-            navigator.clipboard.writeText(token);
+        navigator.clipboard.writeText(token);
 
-            alert("Token copied to clipboard");
+        alert("Token copied to clipboard");
 
-        }
+    }
 
-    </script>
-    {% endblock %}
+</script>
+{% endblock %}
