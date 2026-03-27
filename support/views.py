@@ -289,12 +289,33 @@ def update_ticket_status(request, ticket_id):
         return render(request, "403.html")
 
     new_status = request.POST.get("status")
-
-    allowed_status = ["open", "in_progress", "resolved", "closed"]
+    allowed_status = dict(SupportTicket.STATUS_CHOICES)
 
     if new_status in allowed_status:
+        old_status_display = ticket.get_status_display()
         ticket.status = new_status
         ticket.save()
+        new_status_display = ticket.get_status_display()
+
+        # Audit Trail: System message
+        TicketMessage.objects.create(
+            ticket=ticket,
+            author=request.user,
+            content=f" Status updated from '{old_status_display}' to '{new_status_display}'."
+        )
+
+        # Notification to user
+        if ticket.user != request.user:
+            Notification.objects.create(
+                title=f"Ticket {ticket.ticket_code} Updated",
+                content=f"Your ticket status is now: {new_status_display}",
+                type="support",
+                to_user=ticket.user,
+                device=ticket.device,
+                ticket=ticket
+            )
+        
+        messages.success(request, f"Ticket status updated to {new_status_display}")
 
     return redirect("ticket_detail", ticket_id=ticket.id)
 
