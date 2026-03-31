@@ -12,42 +12,57 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-base:    #0d1117;
-            --bg-panel:   #161b22;
-            --bg-row:     #1c2128;
-            --border:     #30363d;
+            --bg-base: #0d1117;
+            --bg-panel: #161b22;
+            --bg-row: #1c2128;
+            --border: #30363d;
             --border-dim: #21262d;
             --text-1: #e6edf3;
             --text-2: #8b949e;
             --text-3: #484f58;
-            --accent:     #58a6ff;
-            --accent-dim: rgba(88,166,255,0.08);
-            --green:      #3fb950;
-            --green-dim:  rgba(63,185,80,0.08);
-            --red:        #f85149;
-            --red-dim:    rgba(248,81,73,0.08);
-            --yellow:     #d29922;
-            --yellow-dim: rgba(210,153,34,0.08);
-            --sidebar-w:  240px;
+            --accent: #58a6ff;
+            --accent-dim: rgba(88, 166, 255, 0.08);
+            --green: #3fb950;
+            --green-dim: rgba(63, 185, 80, 0.08);
+            --red: #f85149;
+            --red-dim: rgba(248, 81, 73, 0.08);
+            --yellow: #d29922;
+            --yellow-dim: rgba(210, 153, 34, 0.08);
+            --sidebar-w: 240px;
         }
 
-        *, *::before, *::after { box-sizing: border-box; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
             background: var(--bg-base);
             color: var(--text-1);
-            font-family: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
             font-size: 13px;
             scrollbar-width: thin;
             scrollbar-color: var(--border) var(--bg-base);
         }
 
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
 
         /* ── Layout ── */
-        .app-shell   { display: flex; min-height: 100vh; }
-        .app-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .app-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
 
         /* ── Sidebar ── */
         .sidebar {
@@ -72,15 +87,22 @@
         }
 
         .sidebar-logo-icon {
-            width: 28px; height: 28px;
+            width: 28px;
+            height: 28px;
             background: var(--accent-dim);
-            border: 1px solid rgba(88,166,255,0.2);
+            border: 1px solid rgba(88, 166, 255, 0.2);
             border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
         }
 
-        .sidebar-logo-icon svg { width: 14px; height: 14px; color: var(--accent); }
+        .sidebar-logo-icon svg {
+            width: 14px;
+            height: 14px;
+            color: var(--accent);
+        }
 
         .sidebar-logo-text {
             font-size: 11px;
@@ -104,7 +126,9 @@
             scrollbar-width: none;
         }
 
-        .sidebar-nav::-webkit-scrollbar { display: none; }
+        .sidebar-nav::-webkit-scrollbar {
+            display: none;
+        }
 
         .nav-section {
             padding: 14px 6px 4px;
@@ -129,14 +153,21 @@
             margin-bottom: 1px;
         }
 
-        .nav-link svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.7; }
+        .nav-link svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
 
         .nav-link:hover {
             background: var(--bg-row);
             color: var(--text-1);
         }
 
-        .nav-link:hover svg { opacity: 1; }
+        .nav-link:hover svg {
+            opacity: 1;
+        }
 
         .nav-link.active {
             background: var(--accent-dim);
@@ -144,10 +175,19 @@
             font-weight: 600;
         }
 
-        .nav-link.active svg { opacity: 1; color: var(--accent); }
+        .nav-link.active svg {
+            opacity: 1;
+            color: var(--accent);
+        }
 
-        .nav-link.danger { color: #f85149; }
-        .nav-link.danger:hover { background: var(--red-dim); color: #f85149; }
+        .nav-link.danger {
+            color: #f85149;
+        }
+
+        .nav-link.danger:hover {
+            background: var(--red-dim);
+            color: #f85149;
+        }
 
         /* ── Sidebar footer / user card ── */
         .sidebar-footer {
@@ -166,23 +206,46 @@
         }
 
         .user-avatar {
-            width: 28px; height: 28px;
+            width: 28px;
+            height: 28px;
             border-radius: 6px;
             background: linear-gradient(135deg, #2a3a4a 0%, #1c2d3d 100%);
             border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
             color: var(--accent);
             flex-shrink: 0;
             text-transform: uppercase;
         }
 
-        .user-info { flex: 1; min-width: 0; }
-        .user-name  { font-size: 11px; font-weight: 600; color: var(--text-1); truncate: true; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .user-role  { font-size: 9px; color: var(--text-3); margin-top: 1px; }
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-1);
+            truncate: true;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 9px;
+            color: var(--text-3);
+            margin-top: 1px;
+        }
 
         .logout-btn {
-            background: none; border: none; cursor: pointer;
+            background: none;
+            border: none;
+            cursor: pointer;
             padding: 4px;
             color: var(--text-3);
             border-radius: 4px;
@@ -190,8 +253,15 @@
             display: flex;
         }
 
-        .logout-btn:hover { color: var(--red); background: var(--red-dim); }
-        .logout-btn svg   { width: 13px; height: 13px; }
+        .logout-btn:hover {
+            color: var(--red);
+            background: var(--red-dim);
+        }
+
+        .logout-btn svg {
+            width: 13px;
+            height: 13px;
+        }
 
         /* ── Topbar ── */
         .topbar {
@@ -226,7 +296,8 @@
         }
 
         .status-pill-dot {
-            width: 6px; height: 6px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--green);
             animation: dpulse 2.5s infinite;
@@ -242,8 +313,11 @@
         /* ── Notification button ── */
         .notif-btn {
             position: relative;
-            width: 34px; height: 34px;
-            display: flex; align-items: center; justify-content: center;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: none;
             border: 1px solid transparent;
             border-radius: 7px;
@@ -252,7 +326,10 @@
             transition: background 0.15s, border-color 0.15s, color 0.15s;
         }
 
-        .notif-btn svg { width: 15px; height: 15px; }
+        .notif-btn svg {
+            width: 15px;
+            height: 15px;
+        }
 
         .notif-btn:hover {
             background: var(--bg-row);
@@ -262,15 +339,19 @@
 
         .notif-badge {
             position: absolute;
-            top: 4px; right: 4px;
-            min-width: 14px; height: 14px;
+            top: 4px;
+            right: 4px;
+            min-width: 14px;
+            height: 14px;
             padding: 0 3px;
             background: var(--red);
             color: #fff;
             font-size: 8px;
             font-weight: 800;
             border-radius: 7px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             ring: 2px solid var(--bg-panel);
             outline: 2px solid var(--bg-panel);
             line-height: 1;
@@ -286,7 +367,7 @@
             border: 1px solid var(--border);
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
             z-index: 100;
         }
 
@@ -306,50 +387,97 @@
         }
 
         .panel-hd {
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 10px 14px;
             border-bottom: 1px solid var(--border-dim);
         }
 
         .ph-label {
-            font-size: 10px; font-weight: 600;
+            font-size: 10px;
+            font-weight: 600;
             color: var(--text-2);
             letter-spacing: 0.07em;
             text-transform: uppercase;
         }
 
         .badge {
-            display: inline-flex; align-items: center; gap: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             padding: 2px 7px;
             border-radius: 4px;
-            font-size: 9px; font-weight: 700;
+            font-size: 9px;
+            font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
 
-        .bg { background: var(--green-dim);  color: var(--green);  }
-        .br { background: var(--red-dim);    color: var(--red);    }
-        .bb { background: var(--accent-dim); color: var(--accent); }
-        .bd { background: var(--bg-row);     color: var(--text-3); }
+        .bg {
+            background: var(--green-dim);
+            color: var(--green);
+        }
 
-        .dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-        .dg  { background: var(--green); }
-        .dr  { background: var(--red);   }
-        .dd  { background: var(--text-3);}
-        .dp  { animation: dpulse 2s infinite; }
+        .br {
+            background: var(--red-dim);
+            color: var(--red);
+        }
+
+        .bb {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .bd {
+            background: var(--bg-row);
+            color: var(--text-3);
+        }
+
+        .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .dg {
+            background: var(--green);
+        }
+
+        .dr {
+            background: var(--red);
+        }
+
+        .dd {
+            background: var(--text-3);
+        }
+
+        .dp {
+            animation: dpulse 2s infinite;
+        }
 
         @keyframes dpulse {
-            0%,100% { opacity: 1 }
-            50%      { opacity: 0.35 }
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.35
+            }
         }
 
         /* ── Flash messages ── */
         .flash-wrapper {
             position: fixed;
-            top: 16px; left: 50%;
+            top: 16px;
+            left: 50%;
             transform: translateX(-50%);
             z-index: 200;
-            width: 100%; max-width: 420px;
+            width: 100%;
+            max-width: 420px;
             padding: 0 16px;
             pointer-events: none;
         }
@@ -359,25 +487,298 @@
             margin-bottom: 8px;
             border-radius: 8px;
             border: 1px solid;
-            font-size: 11px; font-weight: 700;
+            font-size: 11px;
+            font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
             pointer-events: auto;
             backdrop-filter: blur(8px);
         }
 
-        .flash-item.error   { background: var(--red-dim);   border-color: rgba(248,81,73,0.25);  color: var(--red);   }
-        .flash-item.success { background: var(--green-dim); border-color: rgba(63,185,80,0.25);  color: var(--green); }
+        .flash-item.error {
+            background: var(--red-dim);
+            border-color: rgba(248, 81, 73, 0.25);
+            color: var(--red);
+        }
+
+        .flash-item.success {
+            background: var(--green-dim);
+            border-color: rgba(63, 185, 80, 0.25);
+            color: var(--green);
+        }
 
         .flash-close {
-            float: right; margin-left: 12px;
-            background: none; border: none; cursor: pointer;
-            color: inherit; opacity: 0.5;
-            font-size: 13px; line-height: 1;
+            float: right;
+            margin-left: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.5;
+            font-size: 13px;
+            line-height: 1;
             padding: 0;
         }
 
-        .flash-close:hover { opacity: 1; }
+        .flash-close:hover {
+            opacity: 1;
+        }
+
+        /* ── Shared panel sub-components ── */
+        .panel-hd-l {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .ico {
+            width: 13px;
+            height: 13px;
+            color: var(--text-3);
+            flex-shrink: 0;
+        }
+
+        .stat-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 14px;
+            transition: border-color 0.2s;
+        }
+
+        .sc-label {
+            font-size: 9px;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 5px;
+        }
+
+        .sc-num {
+            font-size: 22px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            color: var(--text-1);
+        }
+
+        .sc-bar {
+            height: 2px;
+            margin-top: 8px;
+            background: var(--border-dim);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .sc-fill {
+            height: 100%;
+            border-radius: 1px;
+        }
+
+        /* ── Avatar initials bubble ── */
+        .avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(88, 166, 255, 0.15);
+            color: var(--accent);
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        /* ── Table styles ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead th {
+            padding: 7px 12px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-3);
+            border-bottom: 1px solid var(--border-dim);
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--border-dim);
+            color: var(--text-2);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* ── Filter buttons (fb) ── */
+        .fb {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: none;
+            border: 1px solid var(--border-dim);
+            color: var(--text-3);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .fb:hover {
+            border-color: var(--border);
+            color: var(--text-2);
+        }
+
+        .fb-all {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .fb-online {
+            border-color: var(--green);
+            color: var(--green);
+            background: var(--green-dim);
+        }
+
+        .fb-offline {
+            border-color: var(--red);
+            color: var(--red);
+            background: var(--red-dim);
+        }
+
+        /* ── Key-value row (kv) ── */
+        .kv {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+        }
+
+        .kv+.kv {
+            border-top: 1px solid var(--border-dim);
+        }
+
+        .kv-k {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .kv-v {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-1);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── Mini stat cell (ms) ── */
+        .ms {
+            background: var(--bg-row);
+            border: 1px solid var(--border-dim);
+            border-radius: 5px;
+            padding: 7px 10px;
+        }
+
+        .ms-n {
+            font-size: 18px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .ms-l {
+            font-size: 9px;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-top: 3px;
+        }
+
+        /* ── Scan button ── */
+        .scan-btn {
+            width: 100%;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .sb-on {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .sb-on:hover {
+            background: #79b8ff;
+        }
+
+        .sb-off {
+            background: var(--bg-row);
+            color: var(--text-3);
+            cursor: not-allowed;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Spin animation ── */
+        .spin {
+            animation: spin 1s linear infinite;
+            display: flex;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Live poll indicator ── */
+        .live-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--green);
+            display: inline-block;
+            animation: dpulse 2s infinite;
+        }
+
+        /* ── Timer bar ── */
+        .timer-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 10px;
+            background: var(--yellow-dim);
+            border: 1px solid rgba(210, 153, 34, 0.18);
+            border-radius: 5px;
+        }
     </style>
 </head>
 
@@ -387,13 +788,9 @@
     {% if messages %}
     <div class="flash-wrapper">
         {% for message in messages %}
-        <div x-data="{ show: true }"
-             x-show="show"
-             x-init="setTimeout(() => show = false, 5000)"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="flash-item {{ message.tags }}">
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" class="flash-item {{ message.tags }}">
             <button class="flash-close" @click="show = false">✕</button>
             {{ message }}
         </div>
@@ -410,7 +807,7 @@
             <div class="sidebar-logo">
                 <div class="sidebar-logo-icon">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                     </svg>
                 </div>
                 <div>
@@ -422,14 +819,12 @@
             <!-- Navigation -->
             <nav class="sidebar-nav">
 
-                <a href="/dashboard/"
-                   class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                <a href="/dashboard/" class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z
                                  M14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z
                                  M4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z
-                                 M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                                 M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                     Dashboard
                 </a>
@@ -437,17 +832,15 @@
                 <div class="nav-section">Network</div>
 
                 {% if request.user.is_staff %}
-                <a href="/devices/"
-                   class="nav-link {% if '/devices/' in request.path %}active{% endif %}">
+                <a href="/devices/" class="nav-link {% if '/devices/' in request.path %}active{% endif %}">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25
                                  m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25
-                                 m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/>
+                                 m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3" />
                     </svg>
                     Assets
                 </a>
-                <a href="/enrollments/"
-                   class="nav-link {% if '/enrollments/' in request.path %}active{% endif %}">
+                <a href="/enrollments/" class="nav-link {% if '/enrollments/' in request.path %}active{% endif %}">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72
                                  m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21
@@ -457,7 +850,7 @@
                                  8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197
                                  M15 6.75a3 3 0 11-6 0 3 3 0 016 0z
                                  m6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z
-                                 m-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
+                                 m-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                     </svg>
                     Enrollments
                 </a>
@@ -466,7 +859,7 @@
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2
                                  M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z
-                                 M9 9h6v6H9V9z"/>
+                                 M9 9h6v6H9V9z" />
                     </svg>
                     Setup Agent
                 </a>
@@ -475,12 +868,12 @@
                 <div class="nav-section">Support</div>
 
                 <a href="{% url 'tickets_list' %}"
-                   class="nav-link {% if '/tickets/' in request.path %}active{% endif %}">
+                    class="nav-link {% if '/tickets/' in request.path %}active{% endif %}">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75
                                  m-8.625 0c.328 0 .638.12.875.337l2.25 2.25a1.2 1.2 0 010 1.696
                                  l-2.25 2.25a1.2 1.2 0 01-1.75 0l-2.25-2.25a1.2 1.2 0 010-1.696
-                                 l2.25-2.25c.237-.217.547-.337.875-.337z"/>
+                                 l2.25-2.25c.237-.217.547-.337.875-.337z" />
                     </svg>
                     Tickets
                 </a>
@@ -492,7 +885,7 @@
                         <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0
                                  M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0
                                  m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0
-                                 m-9.75 0h9.75"/>
+                                 m-9.75 0h9.75" />
                     </svg>
                     Django Admin
                 </a>
@@ -506,7 +899,8 @@
                     <div class="user-avatar">{{ request.user.username|first }}</div>
                     <div class="user-info">
                         <div class="user-name">{{ request.user.username }}</div>
-                        <div class="user-role">{% if request.user.is_staff %}Administrator{% else %}Operator{% endif %}</div>
+                        <div class="user-role">{% if request.user.is_staff %}Administrator{% else %}Operator{% endif %}
+                        </div>
                     </div>
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
@@ -514,7 +908,7 @@
                             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25
                                          v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15
-                                         M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                                         M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                             </svg>
                         </button>
                     </form>
@@ -537,37 +931,26 @@
                 <div class="topbar-right">
                     <!-- Notifications -->
                     <div x-data="{ open: false }" @click.away="open = false" style="position:relative;">
-                        <button
-                            class="notif-btn"
-                            @click="open = !open"
-                            hx-get="{% url 'notifications_dropdown' %}"
-                            hx-target="#notif-dropdown"
-                            hx-trigger="click"
-                            hx-swap="innerHTML"
+                        <button class="notif-btn" @click="open = !open" hx-get="{% url 'notifications_dropdown' %}"
+                            hx-target="#notif-dropdown" hx-trigger="click" hx-swap="innerHTML"
                             aria-label="Notifications">
                             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
                                          a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341
                                          C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436
-                                         L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                         L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            <span id="notif-count"
-                                  class="notif-badge"
-                                  hx-get="{% url 'notifications_count' %}"
-                                  hx-trigger="load, every 30s"
-                                  hx-swap="innerHTML">
+                            <span id="notif-count" class="notif-badge" hx-get="{% url 'notifications_count' %}"
+                                hx-trigger="load, every 30s" hx-swap="innerHTML">
                                 {{ notifications_count }}
                             </span>
                         </button>
 
-                        <div x-show="open"
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100"
-                             x-cloak
-                             id="notif-dropdown"
-                             class="notif-dropdown">
-                            <div style="padding:20px;text-align:center;font-size:10px;color:var(--text-3);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">
+                        <div x-show="open" x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                            x-cloak id="notif-dropdown" class="notif-dropdown">
+                            <div
+                                style="padding:20px;text-align:center;font-size:10px;color:var(--text-3);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">
                                 Loading…
                             </div>
                         </div>
@@ -584,4 +967,5 @@
     </div>
 
 </body>
+
 </html>

@@ -53,12 +53,12 @@
     }
   }">
 
-    <!-- ── HEADER ───────────────────────────────── -->
+    <!-- ── HEADER ── -->
     <div
         style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border-dim);">
-        <div style="display:flex; align-items:center; gap:9px;">
-            <svg style="width:15px;height:15px;color:var(--accent);flex-shrink:0;" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="1.8">
+        <div class="panel-hd-l">
+            <svg class="ico" style="color:var(--accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
             </svg>
@@ -66,19 +66,18 @@
                 <div
                     style="font-size:12px; font-weight:700; color:var(--text-1); letter-spacing:0.1em; text-transform:uppercase;">
                     Network Manager</div>
-                <div style="font-size:10px; color:var(--text-3); letter-spacing:0.06em; text-transform:uppercase;">
+                <div style="font-size:9px; color:var(--text-3); letter-spacing:0.06em; text-transform:uppercase;">
                     Network Operations Center</div>
             </div>
         </div>
-        <div style="display:flex; align-items:center; gap:14px;">
-            <div x-show="scanRunning"
-                style="display:flex;align-items:center;gap:6px;padding:3px 9px;border-radius:3px;background:var(--yellow-dim);border:1px solid rgba(210,153,34,0.22);font-size:10px;color:var(--yellow);text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div x-show="scanRunning" class="badge"
+                style="background:var(--yellow-dim); border:1px solid rgba(210,153,34,0.22); color:var(--yellow);">
                 <span class="dot" style="background:var(--yellow);" :class="{'dp':scanRunning}"></span>
-                Scan Running &nbsp;
-                <span style="font-variant-numeric:tabular-nums;" x-text="timerValue"></span>
+                Scan Running &nbsp;<span style="font-variant-numeric:tabular-nums;" x-text="timerValue"></span>
             </div>
             <div
-                style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em;">
+                style="display:flex; align-items:center; gap:5px; font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.07em;">
                 <span class="live-dot"></span> Live · 20s
             </div>
         </div>
@@ -89,13 +88,13 @@
         {% include "partials/dashboard_cards.html" %}
     </div>
 
-    <!-- ── OVERVIEW CARDS ───────────────────────── -->
-    <div class="grid4" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0;">
+    <!-- ── OVERVIEW STAT CARDS ── -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0;">
         <div class="stat-card">
             <div class="sc-label">Total Devices</div>
             <div class="sc-num">{{ total_devices }}</div>
             <div class="sc-bar">
-                <div class="sc-fill" style="width:100%;background:var(--border);"></div>
+                <div class="sc-fill" style="width:100%; background:var(--border);"></div>
             </div>
         </div>
         <div class="stat-card" style="border-color:rgba(63,185,80,0.16);">
@@ -103,7 +102,7 @@
             <div class="sc-num" style="color:var(--green);">{{ total_online_devices }}</div>
             <div class="sc-bar">
                 <div class="sc-fill"
-                    style="width:{% widthratio total_online_devices total_devices 100 %}%;background:var(--green);">
+                    style="width:{% widthratio total_online_devices total_devices 100 %}%; background:var(--green);">
                 </div>
             </div>
         </div>
@@ -112,7 +111,7 @@
             <div class="sc-num" style="color:var(--red);">{{ total_offline_devices }}</div>
             <div class="sc-bar">
                 <div class="sc-fill"
-                    style="width:{% widthratio total_offline_devices total_devices 100 %}%;background:var(--red);">
+                    style="width:{% widthratio total_offline_devices total_devices 100 %}%; background:var(--red);">
                 </div>
             </div>
         </div>
@@ -121,13 +120,13 @@
             <div class="sc-num" style="color:var(--text-2);">{{ total_unknown_devices }}</div>
             <div class="sc-bar">
                 <div class="sc-fill"
-                    style="width:{% widthratio total_unknown_devices total_devices 100 %}%;background:var(--text-3);">
+                    style="width:{% widthratio total_unknown_devices total_devices 100 %}%; background:var(--text-3);">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ── REGISTERED DEVICES ────────────────────── -->
+    <!-- ── REGISTERED DEVICES ── -->
     <div class="panel" style="margin-bottom:10px;">
         <div class="panel-hd">
             <div class="panel-hd-l">
@@ -137,11 +136,11 @@
                 </svg>
                 <span class="ph-label">Registered Devices</span>
             </div>
-            <div style="display:flex;gap:4px;">
+            <div style="display:flex; gap:4px;">
                 <button class="fb" :class="devicesFilter==='all'?'fb-all':''" @click="devicesFilter='all'">All</button>
                 <button class="fb" :class="devicesFilter==='online'?'fb-online':''"
                     @click="devicesFilter='online'">Online</button>
-                <button class="fb" :class="devicesFilter==='offline'?'fb-offline':''"
+                <button class="fb" :class="devicesFilter==='offline'?'fb-offline':'"
                     @click="devicesFilter='offline'">Offline</button>
             </div>
         </div>
@@ -158,31 +157,29 @@
                 </thead>
                 <tbody>
                     {% for device in devices %}
-                    <tr {% if device.status == 'online' %}x-show="devicesFilter==='all'||devicesFilter==='online'" {% elif
-                        device.status == 'offline' %}x-show="devicesFilter==='all'||devicesFilter==='offline'" {% else
+                    <tr {% if device.status=='online' %}x-show="devicesFilter==='all'||devicesFilter==='online'" {% elif
+                        device.status=='offline' %}x-show="devicesFilter==='all'||devicesFilter==='offline'" {% else
                         %}x-show="devicesFilter==='all'" {% endif %}>
                         <td>
-                            <div style="display:flex;align-items:center;gap:7px;">
+                            <div style="display:flex; align-items:center; gap:7px;">
                                 <div class="avatar">{{ device.user.username|first }}</div>
                                 <span style="color:var(--text-1);">{{ device.user.username }}</span>
                             </div>
                         </td>
                         <td style="color:var(--accent);">{{ device.hostname }}</td>
-                        <td style="color:var(--text-1);font-variant-numeric:tabular-nums;">{{ device.ip }}</td>
-                        <td style="color:var(--text-3);font-size:11px;">{{ device.mac }}</td>
+                        <td style="color:var(--text-1); font-variant-numeric:tabular-nums;">{{ device.ip }}</td>
+                        <td style="color:var(--text-3); font-size:11px;">{{ device.mac }}</td>
                         <td>
-                            {% if device.status == "online" %}
-                            <span class="badge bg"><span class="dot dg dp"></span>Online</span>
-                            {% elif device.status == "offline" %}
-                            <span class="badge br"><span class="dot dr"></span>Offline</span>
-                            {% else %}
-                            <span class="badge bd"><span class="dot dd"></span>Unknown</span>
-                            {% endif %}
+                            {% if device.status == "online" %}<span class="badge bg"><span
+                                    class="dot dg dp"></span>Online</span>
+                            {% elif device.status == "offline" %}<span class="badge br"><span
+                                    class="dot dr"></span>Offline</span>
+                            {% else %}<span class="badge bd"><span class="dot dd"></span>Unknown</span>{% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" style="padding:28px;text-align:center;color:var(--text-3);">No registered
+                        <td colspan="5" style="padding:28px; text-align:center; color:var(--text-3);">No registered
                             devices found.</td>
                     </tr>
                     {% endfor %}
@@ -191,8 +188,8 @@
         </div>
     </div>
 
-    <!-- ── DISCOVERED + SCAN PANEL ──────────────── -->
-    <div class="grid-bottom" style="display:grid; grid-template-columns:1fr 280px; gap:10px; align-items:start;">
+    <!-- ── DISCOVERED + SCAN PANEL ── -->
+    <div style="display:grid; grid-template-columns:1fr 270px; gap:10px; align-items:start;">
 
         <!-- Discovered Devices -->
         <div class="panel">
@@ -218,25 +215,24 @@
                     <tbody>
                         {% for host in discovered_devices %}
                         <tr>
-                            <td style="color:var(--text-1);font-variant-numeric:tabular-nums;">{{ host.ip }}</td>
-                            <td style="color:var(--text-3);font-size:11px;">{{ host.mac }}</td>
+                            <td style="color:var(--text-1); font-variant-numeric:tabular-nums;">{{ host.ip }}</td>
+                            <td style="color:var(--text-3); font-size:11px;">{{ host.mac }}</td>
                             <td>
                                 {% if host.device %}<span class="badge bb">Registered</span>
                                 {% else %}<span class="badge bd">Unknown</span>{% endif %}
                             </td>
                             <td>
-                                {% if host.status == "online" %}
-                                <span class="badge bg"><span class="dot dg"></span>{{ host.status }}</span>
-                                {% elif host.status == "offline" %}
-                                <span class="badge br"><span class="dot dr"></span>{{ host.status }}</span>
-                                {% else %}
-                                <span class="badge bd"><span class="dot dd"></span>{{ host.status }}</span>
-                                {% endif %}
+                                {% if host.status == "online" %}<span class="badge bg"><span class="dot dg"></span>{{
+                                    host.status }}</span>
+                                {% elif host.status == "offline" %}<span class="badge br"><span class="dot dr"></span>{{
+                                    host.status }}</span>
+                                {% else %}<span class="badge bd"><span class="dot dd"></span>{{ host.status }}</span>{%
+                                endif %}
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" style="padding:28px;text-align:center;color:var(--text-3);">No discovered
+                            <td colspan="4" style="padding:28px; text-align:center; color:var(--text-3);">No discovered
                                 devices from last scan.</td>
                         </tr>
                         {% endfor %}
@@ -246,7 +242,7 @@
         </div>
 
         <!-- Scan Info Panel -->
-        <div class="panel" style="display:flex;flex-direction:column;">
+        <div class="panel" style="display:flex; flex-direction:column;">
             <div class="panel-hd">
                 <div class="panel-hd-l">
                     <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -258,41 +254,39 @@
             </div>
 
             {% if latest_scan %}
-            <div style="padding:13px 14px; display:flex; flex-direction:column; gap:10px; flex:1;">
+            <div style="padding:12px 14px; display:flex; flex-direction:column; gap:9px; flex:1;">
 
-                <!-- Status row -->
-                <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <span
-                        style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em;">Status</span>
+                <!-- Status -->
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <span class="kv-k">Status</span>
                     <span x-text="scanStatus" :class="{
-              'badge bg': scanStatus==='completed',
-              'badge br': scanStatus==='failed',
-              'badge bd': scanStatus==='pending'
-            }" :style="scanStatus==='running' ? 'background:var(--yellow-dim);color:var(--yellow);display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;' : ''"
+                        'badge bg': scanStatus==='completed',
+                        'badge br': scanStatus==='failed',
+                        'badge bd': scanStatus==='pending'
+                    }" :style="scanStatus==='running' ? 'background:var(--yellow-dim);color:var(--yellow);display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;' : ''"
                         class="badge">
                     </span>
                 </div>
 
                 <!-- Elapsed timer -->
                 <div x-show="scanRunning" class="timer-bar">
+                    <span class="kv-k" style="color:var(--yellow);">Elapsed</span>
                     <span
-                        style="font-size:10px;color:var(--yellow);text-transform:uppercase;letter-spacing:0.07em;">Elapsed</span>
-                    <span style="font-size:12px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;"
+                        style="font-size:12px; font-weight:700; color:var(--yellow); font-variant-numeric:tabular-nums;"
                         x-text="timerValue"></span>
                 </div>
 
                 <!-- Timestamps -->
-                <div style="border:1px solid var(--border-dim);border-radius:5px;overflow:hidden;">
+                <div style="border:1px solid var(--border-dim); border-radius:5px; overflow:hidden;">
                     <div class="kv"><span class="kv-k">Started</span><span class="kv-v" x-text="fmtStart"></span></div>
                     <div class="kv"><span class="kv-k">Finished</span><span class="kv-v"
                             :style="scanRunning?'color:var(--yellow);':''" x-text="fmtEnd"></span></div>
                 </div>
 
-                <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em;">
-                    Statistics</div>
+                <span class="kv-k">Statistics</span>
 
                 <!-- Stats mini grid -->
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
                     <div class="ms">
                         <div class="ms-n" style="color:var(--accent);" x-text="hostsDiscovered"></div>
                         <div class="ms-l">Hosts</div>
@@ -314,13 +308,13 @@
             </div>
             {% else %}
             <div
-                style="flex:1;display:flex;align-items:center;justify-content:center;padding:28px;color:var(--text-3);font-size:11px;">
+                style="flex:1; display:flex; align-items:center; justify-content:center; padding:28px; color:var(--text-3); font-size:11px;">
                 No scans executed yet.
             </div>
             {% endif %}
 
             <!-- Scan Button -->
-            <div style="padding:11px 13px;border-top:1px solid var(--border-dim);">
+            <div style="padding:11px 13px; border-top:1px solid var(--border-dim);">
                 <form method="post" action="{% url 'trigger_scan' %}">
                     {% csrf_token %}
                     <button type="submit" :disabled="scanRunning"
@@ -343,7 +337,7 @@
                     </button>
                 </form>
                 <p x-show="scanRunning"
-                    style="margin-top:7px;font-size:10px;color:var(--yellow);text-align:center;text-transform:uppercase;letter-spacing:0.07em;opacity:0.75;">
+                    style="margin-top:7px; font-size:9px; color:var(--yellow); text-align:center; text-transform:uppercase; letter-spacing:0.07em; opacity:0.75;">
                     ⚠ A scan is currently running
                 </p>
             </div>
@@ -351,7 +345,6 @@
         </div>
     </div>
 
-    <div style="height:20px;"></div>
 </div>
 
 {% endblock %}
