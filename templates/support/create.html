@@ -9,74 +9,65 @@
     {% csrf_token %}
     {% if request.user.is_staff %}
 
-    <label>Department</label>
+    <label>Target Type</label>
     <br>
-
-    <select id="department" name="department">
-
-        <option value="">Select Department</option>
-
-        {% for d in departments %}
-
-        <option value="{{ d.id }}" {% if selected_department and d.id == selected_department.id %}selected{% endif %}>
-            {{ d.name }}
-        </option>
-
-        {% endfor %}
-
+    <select id="target_type" name="target_type">
+        <option value="user" selected>Specific User</option>
+        <option value="office">Entire Office</option>
+        <option value="department">Entire Department</option>
     </select>
     <br><br>
 
-    <label>Office</label>
-    <br>
-
-    <select id="office" name="office">
-
-        {% if selected_office %}
-
-        <option value="{{selected_office.id}}" selected>
-            {{selected_office.name}}
-        </option>
-
-        {% else %}
-
-        <option value="">Select Office</option>
-
-        {% endif %}
-
-    </select>
-
-    <br><br>
-
-    <label>User</label>
-    <br>
-
-    <select id="user" name="user">
-
-        {% if selected_user %}
-
-        <option value="{{selected_user.id}}" selected>
-            {{selected_user.username}}
-        </option>
-
-        {% else %}
-
-        <option value="">Select User</option>
-
-        {% endif %}
-
-    </select>
-    {% if device %}
-
-    <div style="background:#f5f5f5;padding:10px;margin-bottom:15px">
-
-        <strong>Device:</strong>
-        {{ device.hostname }} ({{ device.mac }})
-
-        <input type="hidden" name="device" value="{{ device.id }}">
-
+    <div id="div_department">
+        <label>Department</label>
+        <br>
+        <select id="department" name="department">
+            <option value="">Select Department</option>
+            {% for d in departments %}
+            <option value="{{ d.id }}" {% if selected_department and d.id == selected_department.id %}selected{% endif %}>
+                {{ d.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <br><br>
     </div>
 
+    <div id="div_office">
+        <label>Office</label>
+        <br>
+        <select id="office" name="office">
+            {% if selected_office %}
+            <option value="{{selected_office.id}}" selected>
+                {{selected_office.name}}
+            </option>
+            {% else %}
+            <option value="">Select Office</option>
+            {% endif %}
+        </select>
+        <br><br>
+    </div>
+
+    <div id="div_user">
+        <label>User</label>
+        <br>
+        <select id="user" name="user">
+            {% if selected_user %}
+            <option value="{{selected_user.id}}" selected>
+                {{selected_user.username}}
+            </option>
+            {% else %}
+            <option value="">Select User</option>
+            {% endif %}
+        </select>
+        <br><br>
+    </div>
+
+    {% if device %}
+    <div style="background:#f5f5f5;padding:10px;margin-bottom:15px">
+        <strong>Device:</strong>
+        {{ device.hostname }} ({{ device.mac }})
+        <input type="hidden" name="device" value="{{ device.id }}">
+    </div>
     {% endif %}
 
     {%endif%}
@@ -105,6 +96,42 @@
 <script>
 
     const deviceId = document.getElementById("device-id").value;
+    const targetTypeSelect = document.getElementById("target_type");
+    const divOffice = document.getElementById("div_office");
+    const divUser = document.getElementById("div_user");
+    const officeSelect = document.getElementById("office");
+    const userSelect = document.getElementById("user");
+    const deptSelect = document.getElementById("department");
+
+    function updateVisibility() {
+        if (!targetTypeSelect) return;
+        const targetType = targetTypeSelect.value;
+
+        if (targetType === "department") {
+            divOffice.style.display = "none";
+            divUser.style.display = "none";
+            officeSelect.required = false;
+            userSelect.required = false;
+            deptSelect.required = true;
+        } else if (targetType === "office") {
+            divOffice.style.display = "block";
+            divUser.style.display = "none";
+            officeSelect.required = true;
+            userSelect.required = false;
+            deptSelect.required = true;
+        } else {
+            divOffice.style.display = "block";
+            divUser.style.display = "block";
+            officeSelect.required = true;
+            userSelect.required = true;
+            deptSelect.required = true;
+        }
+    }
+
+    if (targetTypeSelect) {
+        targetTypeSelect.addEventListener("change", updateVisibility);
+        updateVisibility();
+    }
 
     // إذا لم تكن التذكرة قادمة من جهاز
     if (!deviceId) {
@@ -112,25 +139,17 @@
         document.getElementById("department").addEventListener("change", function () {
 
             let departmentId = this.value;
+            if (!departmentId) return;
 
             fetch(`/support/api/offices/${departmentId}/`)
                 .then(response => response.json())
                 .then(data => {
 
-                    let officeSelect = document.getElementById("office");
-
                     officeSelect.innerHTML = "<option value=''>Select Office</option>";
-
-                    document.getElementById("user").innerHTML =
-                        "<option value=''>Select User</option>";
+                    userSelect.innerHTML = "<option value=''>Select User</option>";
 
                     data.forEach(function (office) {
-
-                        officeSelect.innerHTML +=
-                            `<option value="${office.id}">
-                            ${office.name}
-                        </option>`;
-
+                        officeSelect.innerHTML += `<option value="${office.id}">${office.name}</option>`;
                     });
 
                 });
@@ -141,22 +160,16 @@
         document.getElementById("office").addEventListener("change", function () {
 
             let officeId = this.value;
+            if (!officeId) return;
 
             fetch(`/support/api/users/${officeId}/`)
                 .then(response => response.json())
                 .then(data => {
 
-                    let userSelect = document.getElementById("user");
-
                     userSelect.innerHTML = "<option value=''>Select User</option>";
 
                     data.forEach(function (user) {
-
-                        userSelect.innerHTML +=
-                            `<option value="${user.id}">
-                            ${user.username}
-                        </option>`;
-
+                        userSelect.innerHTML += `<option value="${user.id}">${user.username}</option>`;
                     });
 
                 });

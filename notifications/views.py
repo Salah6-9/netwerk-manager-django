@@ -6,10 +6,11 @@ from django.utils import timezone
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_POST
+from django.db.models import Q
+
 # Create your views here.
 def is_admin(user):
     return user.is_superuser or user.groups.filter(name="Admin").exists()
-from django.db.models import Q
 
 
 @login_required
@@ -18,7 +19,7 @@ def notifications_count(request):
     if is_admin(request.user):
 
         count = Notification.objects.filter(
-            resolved=False
+            is_read=False
         ).filter(
             Q(type="system") | Q(to_user=request.user)
         ).count()
@@ -27,7 +28,7 @@ def notifications_count(request):
 
         count = Notification.objects.filter(
             to_user=request.user,
-            resolved=False
+            is_read=False
         ).count()
 
     return render(
@@ -103,3 +104,43 @@ def delete_all_notifications(request):
         Notification.objects.filter(to_user=request.user).delete()
     
     return redirect("notifications_center")
+
+@login_required
+def notifications_dropdown(request):
+    notifications = (
+        Notification.objects
+        .filter(to_user=request.user)
+        .select_related("device", "ticket")
+        .order_by("-created_at")[:10]
+    )
+
+    return render(request, "partials/notifications_dropdown.html", {
+        "notifications": notifications
+    })
+
+@login_required
+def mark_notification_read(request, pk):
+    try:
+        notification = Notification.objects.get(id=pk, to_user=request.user)
+    except Notification.DoesNotExist:
+        return redirect('notifications_center')
+
+    notification.is_read = True
+    notification.save()
+    
+    if notification.ticket:
+        return redirect('ticket_detail', ticket_id=notification.ticket.id)
+    if notification.device:
+        return redirect('device_details', pk=notification.device.id)
+        
+    return redirect('notifications_center')
+
+@login_required
+@require_POST
+def mark_all_read(request):
+    if is_admin(request.user):
+        Notification.objects.filter(is_read=False).update(is_read=True)
+    else:
+        Notification.objects.filter(to_user=request.user, is_read=False).update(is_read=True)
+    
+    return redirect('notifications_center')

@@ -5,7 +5,9 @@
 <h1>My Dashboard</h1>
 
 <h2>My Devices</h2>
-
+<div class="bg-red-500 text-white p-4">
+    TEST RED
+</div>
 <table border="1" cellpadding="5">
 
     <tr>
@@ -30,18 +32,13 @@
         <td>{{ item.device.ip }}</td>
 
         <td>
-
             {% if item.device.status == "online" %}
-            <span style="color:green">● Online</span>
-
+            <span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">● Online</span>
             {% elif item.device.status == "offline" %}
-            <span style="color:red">● Offline</span>
-
+            <span class="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">● Offline</span>
             {% else %}
-            <span style="color:gray">● Unknown</span>
-
+            <span class="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">● Unknown</span>
             {% endif %}
-
         </td>
 
         <td>

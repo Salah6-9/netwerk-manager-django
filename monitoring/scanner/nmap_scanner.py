@@ -212,17 +212,16 @@ def scan_network(network_range=None, use_sudo=False, triggered_by="manual"):
                     if mac in known_devices:
                         device = known_devices[mac]
                         device.ip = ip
-                        device.status = "online"
-                        device.last_seen = timezone.now()
-                        device.save(update_fields=["ip", "status", "last_seen"])
+                        device.last_scan_seen = timezone.now()
+                        device.update_status()
                         updated += 1
                     else:
                         device = Device.objects.create(
                             ip=ip,
                             mac=mac,
-                            status="unknown",
-                            last_seen=timezone.now(),
+                            last_scan_seen=timezone.now(),
                         )
+                        device.update_status()
                         created += 1
 
                 ScanLog.objects.create(
@@ -232,7 +231,15 @@ def scan_network(network_range=None, use_sudo=False, triggered_by="manual"):
                     mac=mac,
                     status="online",
                 )
-            offline_marked = Device.objects.exclude(mac__in=seen_macs).exclude(mac__isnull=True).update(status="offline")
+            # Instead of bulk updating to 'offline', we iterate and call update_status() 
+            # to respect the Agent's status if it's still reporting.
+            offline_devices = Device.objects.exclude(mac__in=seen_macs).exclude(mac__isnull=True)
+            offline_marked = 0
+            for d in offline_devices:
+                old_status = d.status
+                d.update_status() # This will check if both agent and scanner are silent
+                if d.status == "offline" and old_status != "offline":
+                    offline_marked += 1
 
         # 6️⃣ Mark completed
         scan_run.status = "completed"

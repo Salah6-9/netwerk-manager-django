@@ -19,6 +19,8 @@ urlpatterns = [
 
     path("<int:ticket_id>/delete/", views.delete_ticket, name="delete_ticket"), 
 
+    path("delete-all/", views.delete_all_tickets, name="delete_all_tickets"),
+
     
 
 ]

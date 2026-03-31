@@ -49,4 +49,5 @@ urlpatterns = [
 
     path("dashboard/stats/", dashboard_stats, name="dashboard_stats"),
 
+
 ]

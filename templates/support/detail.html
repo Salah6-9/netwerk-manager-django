@@ -25,28 +25,112 @@
     <li>Created: {{ ticket.created_at }}</li>
 
 </ul>
-<h3>Status: {{ ticket.get_status_display }}</h3>
+<!-- Visual Progress Stepper -->
+<div class="mb-8 mt-4">
+    <div class="flex items-center w-full">
+        {% with status=ticket.status %}
+        <!-- Stage: Open -->
+        <div class="flex-1 text-center">
+            <div
+                class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
+                {% if status == 'open' or status == 'in_progress' or status == 'resolved' or status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
+                1
+            </div>
+            <div class="text-xs mt-1 font-semibold {% if status == 'open' %}text-blue-600{% endif %}">Opened</div>
+        </div>
+        <div
+            class="flex-1 h-0.5 {% if status == 'in_progress' or status == 'resolved' or status == 'closed' %}bg-blue-600{% else %}bg-gray-200{% endif %}">
+        </div>
 
-{% if request.user.is_staff %}
+        <!-- Stage: In Progress -->
+        <div class="flex-1 text-center">
+            <div
+                class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
+                {% if status == 'in_progress' or status == 'resolved' or status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
+                2
+            </div>
+            <div class="text-xs mt-1 font-semibold {% if status == 'in_progress' %}text-blue-600{% endif %}">In Progress
+            </div>
+        </div>
+        <div
+            class="flex-1 h-0.5 {% if status == 'resolved' or status == 'closed' %}bg-blue-600{% else %}bg-gray-200{% endif %}">
+        </div>
 
-<form method="post" action="{% url 'update_ticket_status' ticket.id %}">
-    {% csrf_token %}
+        <!-- Stage: Resolved -->
+        <div class="flex-1 text-center">
+            <div
+                class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
+                {% if status == 'resolved' or status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
+                3
+            </div>
+            <div class="text-xs mt-1 font-semibold {% if status == 'resolved' %}text-blue-600{% endif %}">Resolved</div>
+        </div>
+        <div class="flex-1 h-0.5 {% if status == 'closed' %}bg-blue-600{% else %}bg-gray-200{% endif %}"></div>
 
-    <button name="status" value="in_progress">
-        Start Progress
-    </button>
+        <!-- Stage: Closed -->
+        <div class="flex-1 text-center">
+            <div class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
+                {% if status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
+                4
+            </div>
+            <div class="text-xs mt-1 font-semibold {% if status == 'closed' %}text-blue-600{% endif %}">Closed</div>
+        </div>
+        {% endwith %}
+    </div>
+</div>
 
-    <button name="status" value="resolved">
-        Resolve
-    </button>
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <span class="text-sm font-medium text-gray-500">Current Status:</span>
+        <span class="px-3 py-1 ml-2 rounded-full text-sm font-bold text-white" style="
+                {% if ticket.status == 'open' %}background-color: #2563eb !important;
+                {% elif ticket.status == 'in_progress' %}background-color: #f59e0b !important;
+                {% elif ticket.status == 'resolved' %}background-color: #10b981 !important;
+                {% elif ticket.status == 'closed' %}background-color: #4b5563 !important;
+                {% endif %}
+                color: white !important;
+            ">
+            {{ ticket.get_status_display }}
+        </span>
+    </div>
 
-    <button name="status" value="closed">
-        Close
-    </button>
+    {% if request.user.is_staff %}
+    <div class="flex gap-2">
+        {% if ticket.status == 'open' %}
+        <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+            {% csrf_token %}
+            <button name="status" value="in_progress"
+                class="px-4 py-2 rounded text-sm font-bold transition hover:opacity-90 shadow-md"
+                style="background-color: #2563eb !important; color: white !important;">
+                Start Progress
+            </button>
+        </form>
+        {% endif %}
 
-</form>
+        {% if ticket.status != 'resolved' and ticket.status != 'closed' %}
+        <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+            {% csrf_token %}
+            <button name="status" value="resolved"
+                class="px-4 py-2 rounded text-sm font-bold transition hover:opacity-90 shadow-md"
+                style="background-color: #16a34a !important; color: white !important;">
+                Resolve
+            </button>
+        </form>
+        {% endif %}
 
-{% endif %}
+        {% if ticket.status != 'closed' %}
+        <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+            {% csrf_token %}
+            <button name="status" value="closed"
+                class="px-4 py-2 rounded text-sm font-bold transition hover:opacity-90 shadow-md"
+                style="background-color: #1f2937 !important; color: white !important;">
+                Close Ticket
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
 
 <form method="post" action="{% url 'delete_ticket' ticket.id %}">
     {% csrf_token %}
@@ -68,15 +152,16 @@
 
     {% for msg in ticket.messages.all %}
 
-    <div style="margin-bottom:15px">
-
-        <strong>{{ msg.author.username }}</strong>
-        <small>{{ msg.created_at|date:"Y-m-d H:i" }}</small>
-
-        <p>{{ msg.content }}</p>
-
-        <hr>
-
+    <div
+        class="mb-4 p-4 rounded-lg {% if '📝 Status updated' in msg.content %}bg-blue-50 border-l-4 border-blue-400 italic text-sm{% elif msg.author.is_staff %}bg-gray-100 ml-8 border-r-4 border-gray-400{% else %}bg-white border-l-4 border-blue-600 mr-8{% endif %} shadow-sm">
+        <div class="flex justify-between items-center mb-2">
+            <span class="font-bold {% if msg.author.is_staff %}text-blue-700{% endif %}">
+                {{ msg.author.username }}
+                {% if msg.author.is_staff %}<span class="text-[10px] bg-blue-100 px-1 rounded">STAFF</span>{% endif %}
+            </span>
+            <small class="text-gray-500">{{ msg.created_at|date:"Y-m-d H:i" }}</small>
+        </div>
+        <p class="text-gray-800">{{ msg.content }}</p>
     </div>
 
     {% empty %}

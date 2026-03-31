@@ -17,8 +17,9 @@
             <th>Hostname</th>
             <th>User</th>
             <th>IP</th>
-            <th>MAC</th>
             <th>Status</th>
+            <th>Last Agent</th>
+            <th>Last Scan</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -32,24 +33,37 @@
         <tr>
 
             <td>{{ device.hostname }}</td>
-            <td>{{ device.user }}</td>
+            <td>{{ device.user.username }}</td>
             <td>{{ device.ip }}</td>
-            <td>{{ device.mac }}</td>
 
             <td>
-
                 {% if device.status == "online" %}
-                <span style="color:green">● Online</span>
+                <span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">● Online</span>
                 {% elif device.status == "offline" %}
-                <span style="color:red">● Offline</span>
+                <span class="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">● Offline</span>
                 {% else %}
-                <span style="color:gray">● Unknown</span>
+                <span class="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">● Unknown</span>
                 {% endif %}
+            </td>
 
+            <td class="text-xs text-gray-500">
+                {% if device.last_agent_heartbeat %}
+                {{ device.last_agent_heartbeat|date:"H:i" }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td class="text-xs text-gray-500">
+                {% if device.last_scan_seen %}
+                {{ device.last_scan_seen|date:"H:i" }}
+                {% else %}
+                -
+                {% endif %}
             </td>
 
             <td>
-                <a href="{% url 'device_details' device.id %}">View</a>
+                <a href="{% url 'device_details' device.id %}" class="text-blue-600 hover:underline">View</a>
             </td>
 
         </tr>
