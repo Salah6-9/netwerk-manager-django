@@ -24,7 +24,7 @@
     <tr>
         <th>Ticket</th>
         <th>Device</th>
-        <th>User</th>
+        <th>Target</th>
         <th>Title</th>
         <th>Status</th>
         <th>Created</th>
@@ -52,7 +52,13 @@
         </td>
 
         <td>
-            {{ ticket.user }}
+            {% if ticket.target_type == 'user' %}
+            {{ ticket.user.username }}
+            {% elif ticket.target_type == 'office' %}
+            <span class="text-blue-600 font-bold">[Office]</span> {{ ticket.office.name }}
+            {% elif ticket.target_type == 'department' %}
+            <span class="text-green-600 font-bold">[Dept]</span> {{ ticket.department.name }}
+            {% endif %}
         </td>
 
         <td>

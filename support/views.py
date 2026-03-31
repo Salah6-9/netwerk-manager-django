@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from django.db.models import Q
 
 from .models import SupportTicket, TicketMessage
 from devices.models import Device
@@ -25,9 +26,16 @@ def tickets_list(request):
     if request.user.is_staff:
         tickets = SupportTicket.objects.all().order_by("-created_at")
     else:
-        tickets = SupportTicket.objects.filter(
-            user=request.user
-        ).order_by("-created_at")
+        # User sees tickets assigned to them OR their office OR their department
+        profile = getattr(request.user, 'profile', None)
+        if profile:
+            tickets = SupportTicket.objects.filter(
+                Q(user=request.user) |
+                Q(office=profile.office) |
+                Q(department=profile.office.department if profile.office else None)
+            ).order_by("-created_at")
+        else:
+            tickets = SupportTicket.objects.filter(user=request.user).order_by("-created_at")
 
     return render(request, "support/list.html", {
         "tickets": tickets
@@ -43,8 +51,18 @@ def ticket_detail(request, ticket_id):
 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
-    if not request.user.is_staff and ticket.user != request.user:
-        return render(request, "403.html")
+    if not request.user.is_staff:
+        profile = getattr(request.user, 'profile', None)
+        is_targeted = False
+        if ticket.target_type == "user" and ticket.user == request.user:
+            is_targeted = True
+        elif ticket.target_type == "office" and profile and ticket.office == profile.office:
+            is_targeted = True
+        elif ticket.target_type == "department" and profile and profile.office and ticket.department == profile.office.department:
+            is_targeted = True
+            
+        if not is_targeted:
+            return render(request, "403.html")
 
     return render(request, "support/detail.html", {
         "ticket": ticket
@@ -142,12 +160,26 @@ def create_ticket(request):
         # If no device_id was provided, device remains None, which is allowed by the model
 
         # Create ticket
-        ticket = SupportTicket.objects.create(
-            user=user,
-            device=device,
-            title=title,
-            description=description
-        )
+        target_type = request.POST.get("target_type", "user")
+        
+        ticket_data = {
+            "title": title,
+            "description": description,
+            "device": device,
+            "target_type": target_type,
+        }
+
+        if request.user.is_staff:
+            if target_type == "user":
+                ticket_data["user"] = user
+            elif target_type == "office":
+                ticket_data["office"] = office
+            elif target_type == "department":
+                ticket_data["department"] = department
+        else:
+            ticket_data["user"] = request.user
+
+        ticket = SupportTicket.objects.create(**ticket_data)
 
         # First message
         TicketMessage.objects.create(
@@ -160,14 +192,18 @@ def create_ticket(request):
         # Notification Logic
         # -----------------
 
-        if request.user.is_staff :
-            recipients = [user]
+        if request.user.is_staff:
+            if ticket.target_type == "user":
+                recipients = [user]
+            elif ticket.target_type == "office":
+                recipients = User.objects.filter(profile__office=office)
+            elif ticket.target_type == "department":
+                recipients = User.objects.filter(profile__office__department=department)
         else:
             recipients = User.objects.filter(is_staff=True)
 
         for r in recipients:
             if r != request.user:
-
                 Notification.objects.create(
                     title="New Support Ticket",
                     content=f"Ticket {ticket.ticket_code} created",
@@ -238,8 +274,18 @@ def add_ticket_message(request, ticket_id):
 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
-    if not request.user.is_staff and ticket.user != request.user:
-        return render(request, "403.html")
+    if not request.user.is_staff:
+        profile = getattr(request.user, 'profile', None)
+        is_targeted = False
+        if ticket.target_type == "user" and ticket.user == request.user:
+            is_targeted = True
+        elif ticket.target_type == "office" and profile and ticket.office == profile.office:
+            is_targeted = True
+        elif ticket.target_type == "department" and profile and profile.office and ticket.department == profile.office.department:
+            is_targeted = True
+            
+        if not is_targeted:
+            return render(request, "403.html")
 
     content = request.POST.get("content")
 
@@ -254,8 +300,15 @@ def add_ticket_message(request, ticket_id):
         # Notification logic
         recipients = []
         if is_admin(request.user):
-            recipients = [ticket.user]
+            # Manager replied, notify the target(s)
+            if ticket.target_type == "user":
+                recipients = [ticket.user]
+            elif ticket.target_type == "office":
+                recipients = User.objects.filter(profile__office=ticket.office)
+            elif ticket.target_type == "department":
+                recipients = User.objects.filter(profile__office__department=ticket.department)
         else:
+            # User/Participant replied, notify staff
             recipients = list(User.objects.filter(is_staff=True).all())
 
       
@@ -304,16 +357,27 @@ def update_ticket_status(request, ticket_id):
             content=f" Status updated from '{old_status_display}' to '{new_status_display}'."
         )
 
-        # Notification to user
-        if ticket.user != request.user:
-            Notification.objects.create(
-                title=f"Ticket {ticket.ticket_code} Updated",
-                content=f"Your ticket status is now: {new_status_display}",
-                type="support",
-                to_user=ticket.user,
-                device=ticket.device,
-                ticket=ticket
-            )
+        # Notification to target(s)
+        if not is_admin(request.user):
+             pass # Shouldn't happen as is_staff is checked above
+        else:
+            if ticket.target_type == "user":
+                recipients = [ticket.user]
+            elif ticket.target_type == "office":
+                recipients = User.objects.filter(profile__office=ticket.office)
+            elif ticket.target_type == "department":
+                recipients = User.objects.filter(profile__office__department=ticket.department)
+            
+            for r in recipients:
+                if r != request.user:
+                    Notification.objects.create(
+                        title=f"Ticket {ticket.ticket_code} Updated",
+                        content=f"Ticket status is now: {new_status_display}",
+                        type="support",
+                        to_user=r,
+                        device=ticket.device,
+                        ticket=ticket
+                    )
         
         messages.success(request, f"Ticket status updated to {new_status_display}")
 
@@ -330,8 +394,18 @@ def delete_ticket(request, ticket_id):
 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
-    if not request.user.is_staff and ticket.user != request.user:
-        return render(request, "403.html")
+    if not request.user.is_staff:
+        profile = getattr(request.user, 'profile', None)
+        is_targeted = False
+        if ticket.target_type == "user" and ticket.user == request.user:
+            is_targeted = True
+        elif ticket.target_type == "office" and profile and ticket.office == profile.office:
+            is_targeted = True
+        elif ticket.target_type == "department" and profile and profile.office and ticket.department == profile.office.department:
+            is_targeted = True
+            
+        if not is_targeted:
+            return render(request, "403.html")
 
     ticket.delete()
 

@@ -15,9 +15,39 @@ class SupportTicket(models.Model):
         ("closed", "Closed"),
     ]
 
+    TARGET_CHOICES = [
+        ("user", "Specific User"),
+        ("office", "Entire Office"),
+        ("department", "Entire Department"),
+    ]
+
+    target_type = models.CharField(
+        max_length=20,
+        choices=TARGET_CHOICES,
+        default="user"
+    )
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name="tickets",
+        null=True,
+        blank=True
+    )
+
+    office = models.ForeignKey(
+        "users.Office",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tickets"
+    )
+
+    department = models.ForeignKey(
+        "users.Department",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="tickets"
     )
 
