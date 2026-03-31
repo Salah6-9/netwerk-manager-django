@@ -140,7 +140,7 @@
                 <button class="fb" :class="devicesFilter==='all'?'fb-all':''" @click="devicesFilter='all'">All</button>
                 <button class="fb" :class="devicesFilter==='online'?'fb-online':''"
                     @click="devicesFilter='online'">Online</button>
-                <button class="fb" :class="devicesFilter==='offline'?'fb-offline':'"
+                <button class="fb" :class="devicesFilter==='offline'?'fb-offline':''"
                     @click="devicesFilter='offline'">Offline</button>
             </div>
         </div>
@@ -157,8 +157,8 @@
                 </thead>
                 <tbody>
                     {% for device in devices %}
-                    <tr {% if device.status=='online' %}x-show="devicesFilter==='all'||devicesFilter==='online'" {% elif
-                        device.status=='offline' %}x-show="devicesFilter==='all'||devicesFilter==='offline'" {% else
+                    <tr {% if device.status == 'online' %}x-show="devicesFilter==='all'||devicesFilter==='online'" {% elif
+                        device.status == 'offline' %}x-show="devicesFilter==='all'||devicesFilter==='offline'" {% else
                         %}x-show="devicesFilter==='all'" {% endif %}>
                         <td>
                             <div style="display:flex; align-items:center; gap:7px;">
@@ -171,10 +171,9 @@
                         <td style="color:var(--text-3); font-size:11px;">{{ device.mac }}</td>
                         <td>
                             {% if device.status == "online" %}<span class="badge bg"><span
-                                    class="dot dg dp"></span>Online</span>
-                            {% elif device.status == "offline" %}<span class="badge br"><span
-                                    class="dot dr"></span>Offline</span>
-                            {% else %}<span class="badge bd"><span class="dot dd"></span>Unknown</span>{% endif %}
+                                    class="dot dg dp"></span>Online</span>{% elif device.status == "offline" %}<span
+                                class="badge br"><span class="dot dr"></span>Offline</span>{% else %}<span
+                                class="badge bd"><span class="dot dd"></span>Unknown</span>{% endif %}
                         </td>
                     </tr>
                     {% empty %}
@@ -218,16 +217,14 @@
                             <td style="color:var(--text-1); font-variant-numeric:tabular-nums;">{{ host.ip }}</td>
                             <td style="color:var(--text-3); font-size:11px;">{{ host.mac }}</td>
                             <td>
-                                {% if host.device %}<span class="badge bb">Registered</span>
-                                {% else %}<span class="badge bd">Unknown</span>{% endif %}
+                                {% if host.device %}<span class="badge bb">Registered</span>{% else %}<span
+                                    class="badge bd">Unknown</span>{% endif %}
                             </td>
                             <td>
                                 {% if host.status == "online" %}<span class="badge bg"><span class="dot dg"></span>{{
-                                    host.status }}</span>
-                                {% elif host.status == "offline" %}<span class="badge br"><span class="dot dr"></span>{{
-                                    host.status }}</span>
-                                {% else %}<span class="badge bd"><span class="dot dd"></span>{{ host.status }}</span>{%
-                                endif %}
+                                    host.status }}</span>{% elif host.status == "offline" %}<span class="badge br"><span
+                                        class="dot dr"></span>{{ host.status }}</span>{% else %}<span
+                                    class="badge bd"><span class="dot dd"></span>{{ host.status }}</span>{% endif %}
                             </td>
                         </tr>
                         {% empty %}
@@ -255,20 +252,14 @@
 
             {% if latest_scan %}
             <div style="padding:12px 14px; display:flex; flex-direction:column; gap:9px; flex:1;">
-
-                <!-- Status -->
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <span class="kv-k">Status</span>
-                    <span x-text="scanStatus" :class="{
-                        'badge bg': scanStatus==='completed',
-                        'badge br': scanStatus==='failed',
-                        'badge bd': scanStatus==='pending'
-                    }" :style="scanStatus==='running' ? 'background:var(--yellow-dim);color:var(--yellow);display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;' : ''"
-                        class="badge">
-                    </span>
+                    <span x-text="scanStatus"
+                        :class="{'badge bg': scanStatus==='completed','badge br': scanStatus==='failed','badge bd': scanStatus==='pending'}"
+                        :style="scanStatus==='running' ? 'background:var(--yellow-dim);color:var(--yellow);display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;' : ''"
+                        class="badge"></span>
                 </div>
 
-                <!-- Elapsed timer -->
                 <div x-show="scanRunning" class="timer-bar">
                     <span class="kv-k" style="color:var(--yellow);">Elapsed</span>
                     <span
@@ -276,7 +267,6 @@
                         x-text="timerValue"></span>
                 </div>
 
-                <!-- Timestamps -->
                 <div style="border:1px solid var(--border-dim); border-radius:5px; overflow:hidden;">
                     <div class="kv"><span class="kv-k">Started</span><span class="kv-v" x-text="fmtStart"></span></div>
                     <div class="kv"><span class="kv-k">Finished</span><span class="kv-v"
@@ -285,7 +275,6 @@
 
                 <span class="kv-k">Statistics</span>
 
-                <!-- Stats mini grid -->
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
                     <div class="ms">
                         <div class="ms-n" style="color:var(--accent);" x-text="hostsDiscovered"></div>
@@ -304,16 +293,13 @@
                         <div class="ms-l">Offline</div>
                     </div>
                 </div>
-
             </div>
             {% else %}
             <div
                 style="flex:1; display:flex; align-items:center; justify-content:center; padding:28px; color:var(--text-3); font-size:11px;">
-                No scans executed yet.
-            </div>
+                No scans executed yet.</div>
             {% endif %}
 
-            <!-- Scan Button -->
             <div style="padding:11px 13px; border-top:1px solid var(--border-dim);">
                 <form method="post" action="{% url 'trigger_scan' %}">
                     {% csrf_token %}
@@ -338,13 +324,10 @@
                 </form>
                 <p x-show="scanRunning"
                     style="margin-top:7px; font-size:9px; color:var(--yellow); text-align:center; text-transform:uppercase; letter-spacing:0.07em; opacity:0.75;">
-                    ⚠ A scan is currently running
-                </p>
+                    ⚠ A scan is currently running</p>
             </div>
-
         </div>
     </div>
-
 </div>
 
 {% endblock %}

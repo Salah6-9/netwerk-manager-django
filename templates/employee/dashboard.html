@@ -2,87 +2,113 @@
 
 {% block content %}
 
-<h1>My Dashboard</h1>
+<div x-data="{ devicesFilter: 'all' }">
 
-<h2>My Devices</h2>
-<div class="bg-red-500 text-white p-4">
-    TEST RED
+<!-- HEADER -->
+<div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+    <div>
+        <div style="font-size:13px; font-weight:700;">My Devices</div>
+        <div style="font-size:10px; color:var(--text-3);">Monitoring Overview</div>
+    </div>
 </div>
-<table border="1" cellpadding="5">
 
-    <tr>
-        <th>Hostname</th>
-        <th>OS</th>
-        <th>IP</th>
-        <th>Status</th>
-        <th>CPU</th>
-        <th>RAM</th>
-        <th>Disk</th>
-        <th>Last Update</th>
-    </tr>
+<!-- STATS -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;">
 
-    {% for item in devices %}
+    <div class="stat-card">
+        <div class="sc-label">Total</div>
+        <div class="sc-num">{{ devices|length }}</div>
+    </div>
 
-    <tr>
+    <div class="stat-card">
+        <div class="sc-label" style="color:var(--green);">Online</div>
+        <div class="sc-num" style="color:var(--green);">{{ online_count }}</div>
+    </div>
 
-        <td>{{ item.device.hostname }}</td>
+    <div class="stat-card">
+        <div class="sc-label" style="color:var(--red);">Offline</div>
+        <div class="sc-num" style="color:var(--red);">{{ offline_count }}</div>
+    </div>
 
-        <td>{{ item.device.os }}</td>
+</div>
 
-        <td>{{ item.device.ip }}</td>
+<!-- FILTER -->
+<div style="display:flex; gap:5px; margin-bottom:10px;">
+    <button class="fb" @click="devicesFilter='all'">All</button>
+    <button class="fb" @click="devicesFilter='online'">Online</button>
+    <button class="fb" @click="devicesFilter='offline'">Offline</button>
+</div>
 
-        <td>
-            {% if item.device.status == "online" %}
-            <span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">● Online</span>
-            {% elif item.device.status == "offline" %}
-            <span class="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">● Offline</span>
-            {% else %}
-            <span class="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">● Unknown</span>
-            {% endif %}
-        </td>
+<!-- TABLE -->
+<div class="panel">
+    <div style="overflow-x:auto;">
+        <table>
 
-        <td>
-            {% if item.status %}
-            {{ item.status.cpu_usage }} %
-            {% else %}
-            -
-            {% endif %}
-        </td>
+            <thead>
+                <tr>
+                    <th>Hostname</th>
+                    <th>IP</th>
+                    <th>Status</th>
+                    <th>CPU</th>
+                    <th>RAM</th>
+                    <th>Disk</th>
+                    <th>Last Update</th>
+                </tr>
+            </thead>
 
-        <td>
-            {% if item.status %}
-            {{ item.status.ram_usage }} %
-            {% else %}
-            -
-            {% endif %}
-        </td>
+            <tbody>
+                {% for item in devices %}
+                <tr 
+                    x-show="
+                      devicesFilter === 'all' ||
+                      (devicesFilter === 'online' && '{{ item.device.status }}' === 'online') ||
+                      (devicesFilter === 'offline' && '{{ item.device.status }}' === 'offline')
+                    "
+                >
 
-        <td>
-            {% if item.status %}
-            {{ item.status.disk_usage }} %
-            {% else %}
-            -
-            {% endif %}
-        </td>
+                    <td>{{ item.device.hostname }}</td>
+                    <td>{{ item.device.ip }}</td>
 
-        <td>
-            {% if item.status %}
-            {{ item.status.last_update }}
-            {% else %}
-            -
-            {% endif %}
-        </td>
+                    <td>
+                        {% if item.device.status == "online" %}
+                        <span class="badge bg"><span class="dot dg"></span>Online</span>
+                        {% elif item.device.status == "offline" %}
+                        <span class="badge br"><span class="dot dr"></span>Offline</span>
+                        {% else %}
+                        <span class="badge bd"><span class="dot dd"></span>Unknown</span>
+                        {% endif %}
+                    </td>
 
-    </tr>
+                    <td>
+                        {% if item.status %}{{ item.status.cpu_usage }}%{% else %}-{% endif %}
+                    </td>
 
-    {% empty %}
+                    <td>
+                        {% if item.status %}{{ item.status.ram_usage }}%{% else %}-{% endif %}
+                    </td>
 
-    <tr>
-        <td colspan="8">No devices registered.</td>
-    </tr>
+                    <td>
+                        {% if item.status %}{{ item.status.disk_usage }}%{% else %}-{% endif %}
+                    </td>
 
-    {% endfor %}
+                    <td>
+                        {% if item.status %}{{ item.status.last_update }}{% else %}-{% endif %}
+                    </td>
 
-</table>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:20px;">
+                        No devices assigned
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+</div>
 
 {% endblock %}
