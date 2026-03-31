@@ -1,154 +1,587 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>NetWerk Manager</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Manager :: NOC</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
-
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-base:    #0d1117;
+            --bg-panel:   #161b22;
+            --bg-row:     #1c2128;
+            --border:     #30363d;
+            --border-dim: #21262d;
+            --text-1: #e6edf3;
+            --text-2: #8b949e;
+            --text-3: #484f58;
+            --accent:     #58a6ff;
+            --accent-dim: rgba(88,166,255,0.08);
+            --green:      #3fb950;
+            --green-dim:  rgba(63,185,80,0.08);
+            --red:        #f85149;
+            --red-dim:    rgba(248,81,73,0.08);
+            --yellow:     #d29922;
+            --yellow-dim: rgba(210,153,34,0.08);
+            --sidebar-w:  240px;
+        }
 
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg-base);
+            color: var(--text-1);
+            font-family: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+            font-size: 13px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) var(--bg-base);
+        }
+
+        [x-cloak] { display: none !important; }
+
+        /* ── Layout ── */
+        .app-shell   { display: flex; min-height: 100vh; }
+        .app-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-base);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 16px 16px;
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        .sidebar-logo-icon {
+            width: 28px; height: 28px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(88,166,255,0.2);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo-icon svg { width: 14px; height: 14px; color: var(--accent); }
+
+        .sidebar-logo-text {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-1);
+        }
+
+        .sidebar-logo-sub {
+            font-size: 9px;
+            color: var(--text-3);
+            letter-spacing: 0.06em;
+            margin-top: 1px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 10px 10px;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .sidebar-nav::-webkit-scrollbar { display: none; }
+
+        .nav-section {
+            padding: 14px 6px 4px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-3);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-2);
+            text-decoration: none;
+            transition: background 0.12s, color 0.12s;
+            margin-bottom: 1px;
+        }
+
+        .nav-link svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.7; }
+
+        .nav-link:hover {
+            background: var(--bg-row);
+            color: var(--text-1);
+        }
+
+        .nav-link:hover svg { opacity: 1; }
+
+        .nav-link.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-link.active svg { opacity: 1; color: var(--accent); }
+
+        .nav-link.danger { color: #f85149; }
+        .nav-link.danger:hover { background: var(--red-dim); color: #f85149; }
+
+        /* ── Sidebar footer / user card ── */
+        .sidebar-footer {
+            padding: 10px;
+            border-top: 1px solid var(--border-dim);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: var(--bg-row);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .user-avatar {
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #2a3a4a 0%, #1c2d3d 100%);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700;
+            color: var(--accent);
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .user-info { flex: 1; min-width: 0; }
+        .user-name  { font-size: 11px; font-weight: 600; color: var(--text-1); truncate: true; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role  { font-size: 9px; color: var(--text-3); margin-top: 1px; }
+
+        .logout-btn {
+            background: none; border: none; cursor: pointer;
+            padding: 4px;
+            color: var(--text-3);
+            border-radius: 4px;
+            transition: color 0.15s, background 0.15s;
+            display: flex;
+        }
+
+        .logout-btn:hover { color: var(--red); background: var(--red-dim); }
+        .logout-btn svg   { width: 13px; height: 13px; }
+
+        /* ── Topbar ── */
+        .topbar {
+            height: 52px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            gap: 16px;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-3);
+        }
+
+        .status-pill-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: dpulse 2.5s infinite;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        /* ── Notification button ── */
+        .notif-btn {
+            position: relative;
+            width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center;
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            color: var(--text-2);
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+
+        .notif-btn svg { width: 15px; height: 15px; }
+
+        .notif-btn:hover {
+            background: var(--bg-row);
+            border-color: var(--border);
+            color: var(--text-1);
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: 4px; right: 4px;
+            min-width: 14px; height: 14px;
+            padding: 0 3px;
+            background: var(--red);
+            color: #fff;
+            font-size: 8px;
+            font-weight: 800;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            ring: 2px solid var(--bg-panel);
+            outline: 2px solid var(--bg-panel);
+            line-height: 1;
+        }
+
+        /* ── Notifications dropdown ── */
+        .notif-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 320px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+
+        /* ── Main content ── */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 32px;
+        }
+
+        /* ── Shared utility classes ── */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .panel-hd {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        .ph-label {
+            font-size: 10px; font-weight: 600;
+            color: var(--text-2);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 9px; font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .bg { background: var(--green-dim);  color: var(--green);  }
+        .br { background: var(--red-dim);    color: var(--red);    }
+        .bb { background: var(--accent-dim); color: var(--accent); }
+        .bd { background: var(--bg-row);     color: var(--text-3); }
+
+        .dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+        .dg  { background: var(--green); }
+        .dr  { background: var(--red);   }
+        .dd  { background: var(--text-3);}
+        .dp  { animation: dpulse 2s infinite; }
+
+        @keyframes dpulse {
+            0%,100% { opacity: 1 }
+            50%      { opacity: 0.35 }
+        }
+
+        /* ── Flash messages ── */
+        .flash-wrapper {
+            position: fixed;
+            top: 16px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            width: 100%; max-width: 420px;
+            padding: 0 16px;
+            pointer-events: none;
+        }
+
+        .flash-item {
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border: 1px solid;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            pointer-events: auto;
+            backdrop-filter: blur(8px);
+        }
+
+        .flash-item.error   { background: var(--red-dim);   border-color: rgba(248,81,73,0.25);  color: var(--red);   }
+        .flash-item.success { background: var(--green-dim); border-color: rgba(63,185,80,0.25);  color: var(--green); }
+
+        .flash-close {
+            float: right; margin-left: 12px;
+            background: none; border: none; cursor: pointer;
+            color: inherit; opacity: 0.5;
+            font-size: 13px; line-height: 1;
+            padding: 0;
+        }
+
+        .flash-close:hover { opacity: 1; }
+    </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body>
 
+    <!-- ── Flash messages ── -->
     {% if messages %}
-    <div style="margin:10px;">
+    <div class="flash-wrapper">
         {% for message in messages %}
-        <div style="
-        padding:10px;
-        margin-bottom:5px;
-        border:1px solid #ccc;
-        background-color: {% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %};
-        color: {% if message.tags == 'error' %}#721c24{% else %}#155724{% endif %};
-      ">
+        <div x-data="{ show: true }"
+             x-show="show"
+             x-init="setTimeout(() => show = false, 5000)"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="flash-item {{ message.tags }}">
+            <button class="flash-close" @click="show = false">✕</button>
             {{ message }}
         </div>
         {% endfor %}
     </div>
     {% endif %}
-    <div class="flex">
 
-        <!-- Sidebar -->
-        <aside class="w-64 bg-gray-900 text-white min-h-screen p-6">
+    <div class="app-shell">
 
-            <h2 class="text-xl font-bold mb-8">
-                NetWerk Manager
-            </h2>
+        <!-- ══════════════ SIDEBAR ══════════════ -->
+        <aside class="sidebar">
 
-            <nav class="space-y-3">
+            <!-- Logo -->
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="sidebar-logo-text">NetWerk</div>
+                    <div class="sidebar-logo-sub">Manager · NOC</div>
+                </div>
+            </div>
 
-                <a href="/dashboard/" class="block hover:text-gray-300">
+            <!-- Navigation -->
+            <nav class="sidebar-nav">
+
+                <a href="/dashboard/"
+                   class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z
+                                 M14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z
+                                 M4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z
+                                 M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                    </svg>
                     Dashboard
                 </a>
 
-                <a href="/notifications/" class="block hover:text-gray-300">
-                    Notifications
-                </a>
+                <div class="nav-section">Network</div>
 
                 {% if request.user.is_staff %}
-
-                <a href="/devices/" class="block hover:text-gray-300">
-                    Devices
+                <a href="/devices/"
+                   class="nav-link {% if '/devices/' in request.path %}active{% endif %}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25
+                                 m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25
+                                 m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/>
+                    </svg>
+                    Assets
                 </a>
-
-                <a href="/enrollments/" class="block hover:text-gray-300">
-                    Enrollment Requests
+                <a href="/enrollments/"
+                   class="nav-link {% if '/enrollments/' in request.path %}active{% endif %}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72
+                                 m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21
+                                 c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719
+                                 m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75
+                                 a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72
+                                 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197
+                                 M15 6.75a3 3 0 11-6 0 3 3 0 016 0z
+                                 m6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z
+                                 m-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
+                    </svg>
+                    Enrollments
                 </a>
-
                 {% else %}
-
-                <a href="/setup-agent/" class="block hover:text-gray-300">
+                <a href="/setup-agent/" class="nav-link">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2
+                                 M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z
+                                 M9 9h6v6H9V9z"/>
+                    </svg>
                     Setup Agent
                 </a>
+                {% endif %}
 
-                {% endif %}
+                <div class="nav-section">Support</div>
+
+                <a href="{% url 'tickets_list' %}"
+                   class="nav-link {% if '/tickets/' in request.path %}active{% endif %}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75
+                                 m-8.625 0c.328 0 .638.12.875.337l2.25 2.25a1.2 1.2 0 010 1.696
+                                 l-2.25 2.25a1.2 1.2 0 01-1.75 0l-2.25-2.25a1.2 1.2 0 010-1.696
+                                 l2.25-2.25c.237-.217.547-.337.875-.337z"/>
+                    </svg>
+                    Tickets
+                </a>
+
                 {% if request.user.is_staff %}
-                <a href="/admin/" class="block hover:text-gray-300">
-                    Admin Panel
+                <div class="nav-section">Admin</div>
+                <a href="/admin/" class="nav-link danger">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0
+                                 M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0
+                                 m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0
+                                 m-9.75 0h9.75"/>
+                    </svg>
+                    Django Admin
                 </a>
                 {% endif %}
-                <a href="{% url 'tickets_list' %}" class="block hover:text-gray-300">
-                    Support Tickets
-                </a>
 
             </nav>
 
-        </aside>
-
-
-        <!-- Main Area -->
-        <div class="flex-1 flex flex-col">
-
-            <!-- Topbar -->
-            <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
-
-                <div class="font-semibold text-gray-700">
-                    Logged in as {{ request.user }}
-                </div>
-
-                <div class="flex items-center gap-6">
-                    <!-- Notifications Dropdown -->
-                    <div x-data="{ open: false }" @click.away="open = false" class="relative">
-
-                        <button @click="open = !open" hx-get="{% url 'notifications_dropdown' %}"
-                            hx-target="#notif-dropdown" hx-trigger="click" hx-swap="innerHTML"
-                            class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full">
-
-                            <span class="text-xl">🔔</span>
-
-                            <span id="notif-count" hx-get="{% url 'notifications_count' %}" hx-trigger="load, every 30s"
-                                hx-swap="innerHTML"
-                                class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-
-                                {{ notifications_count }}
-                            </span>
-
-                        </button>
-
-                        <div x-show="open" x-transition id="notif-dropdown"
-                            class="absolute right-0 mt-2 z-50 origin-top-right shadow-2xl">
-
-                            <div
-                                class="w-80 bg-white shadow-xl rounded-lg border p-4 text-center text-sm text-gray-500">
-                                Loading...
-                            </div>
-
-                        </div>
-
+            <!-- User card -->
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar">{{ request.user.username|first }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ request.user.username }}</div>
+                        <div class="user-role">{% if request.user.is_staff %}Administrator{% else %}Operator{% endif %}</div>
                     </div>
-
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
-                        <button class="text-red-600 hover:text-red-800">
-                            Logout
+                        <button type="submit" class="logout-btn" title="Sign out">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25
+                                         v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15
+                                         M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                            </svg>
                         </button>
                     </form>
+                </div>
+            </div>
+        </aside>
 
+        <!-- ══════════════ MAIN AREA ══════════════ -->
+        <div class="app-content">
+
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <div class="status-pill">
+                        <span class="status-pill-dot"></span>
+                        Operational · Nominal
+                    </div>
                 </div>
 
+                <div class="topbar-right">
+                    <!-- Notifications -->
+                    <div x-data="{ open: false }" @click.away="open = false" style="position:relative;">
+                        <button
+                            class="notif-btn"
+                            @click="open = !open"
+                            hx-get="{% url 'notifications_dropdown' %}"
+                            hx-target="#notif-dropdown"
+                            hx-trigger="click"
+                            hx-swap="innerHTML"
+                            aria-label="Notifications">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
+                                         a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341
+                                         C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436
+                                         L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            <span id="notif-count"
+                                  class="notif-badge"
+                                  hx-get="{% url 'notifications_count' %}"
+                                  hx-trigger="load, every 30s"
+                                  hx-swap="innerHTML">
+                                {{ notifications_count }}
+                            </span>
+                        </button>
+
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-cloak
+                             id="notif-dropdown"
+                             class="notif-dropdown">
+                            <div style="padding:20px;text-align:center;font-size:10px;color:var(--text-3);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">
+                                Loading…
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </header>
 
-
-            <!-- Content Wrapper -->
-            <main class="flex-1 p-8">
-
-                <div class="max-w-7xl mx-auto">
-
-                    {% block content %}
-                    {% endblock %}
-
-                </div>
-
+            <!-- Page content -->
+            <main class="main-content">
+                {% block content %}{% endblock %}
             </main>
 
         </div>
-
     </div>
 
 </body>
-
 </html>

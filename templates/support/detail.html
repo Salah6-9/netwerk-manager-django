@@ -153,7 +153,7 @@
     {% for msg in ticket.messages.all %}
 
     <div
-        class="mb-4 p-4 rounded-lg {% if '📝 Status updated' in msg.content %}bg-blue-50 border-l-4 border-blue-400 italic text-sm{% elif msg.author.is_staff %}bg-gray-100 ml-8 border-r-4 border-gray-400{% else %}bg-white border-l-4 border-blue-600 mr-8{% endif %} shadow-sm">
+        class="mb-4 p-4 rounded-lg {% if ' Status updated' in msg.content %}bg-blue-50 border-l-4 border-blue-400 italic text-sm{% elif msg.author.is_staff %}bg-gray-100 ml-8 border-r-4 border-gray-400{% else %}bg-white border-l-4 border-blue-600 mr-8{% endif %} shadow-sm">
         <div class="flex justify-between items-center mb-2">
             <span class="font-bold {% if msg.author.is_staff %}text-blue-700{% endif %}">
                 {{ msg.author.username }}
