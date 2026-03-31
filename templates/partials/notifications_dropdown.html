@@ -1,41 +1,47 @@
-<div class="bg-white shadow-lg rounded-lg w-80 max-h-96 overflow-y-auto border">
+<div class="bg-[#0d0d0d] border border-[#262626] rounded-lg w-80 max-h-96 overflow-hidden flex flex-col shadow-2xl">
 
-  <div class="p-3 border-b font-semibold bg-gray-50 flex justify-between items-center">
-    <span>Notifications</span>
-    <a href="{% url 'notifications_center' %}" class="text-xs text-blue-600 hover:underline">View All</a>
+  <div class="p-4 border-b border-[#262626] bg-[#161616] flex justify-between items-center">
+    <span class="text-[10px] font-bold text-[#525252] uppercase tracking-widest">Signal Intercepts</span>
+    <a href="{% url 'notifications_center' %}"
+      class="text-[9px] font-bold text-[#0f62fe] hover:underline uppercase tracking-widest">Archive Trace</a>
   </div>
 
-  {% if notifications %}
-  <ul>
-    {% for n in notifications %}
-    <li class="border-b last:border-0">
-      <a href="{% url 'mark_notification_read' n.id %}"
-        class="block p-3 transition hover:bg-gray-100 {% if not n.is_read %}bg-blue-50/50 font-semibold{% endif %}">
+  <div class="overflow-y-auto flex-1">
+    {% if notifications %}
+    <ul class="divide-y divide-[#262626]">
+      {% for n in notifications %}
+      <li class="relative">
+        <a href="{% url 'mark_notification_read' n.id %}"
+          class="block p-4 transition hover:bg-[#161616] {% if not n.is_read %}bg-[#0f62fe]/[0.05]{% endif %}">
 
-        <div class="flex justify-between items-start">
-          <div class="text-sm text-gray-800">
-            {{ n.title }}
-            {% if not n.is_read %}
-            <span class="inline-block w-2 h-2 bg-red-500 rounded-full ml-1"></span>
-            {% endif %}
+          <div class="flex justify-between items-start mb-1">
+            <div class="text-[11px] font-bold {% if not n.is_read %}text-[#f4f4f4]{% else %}text-[#525252]{% endif %}">
+              {% if not n.is_read %}
+              <span class="inline-block w-1.5 h-1.5 bg-[#0f62fe] rounded-full mr-1.5"></span>
+              {% endif %}
+              {{ n.title }}
+            </div>
+            <div class="text-[9px] text-[#525252] whitespace-nowrap ml-2 uppercase font-mono">
+              {{ n.created_at|timesince }}
+            </div>
           </div>
-          <div class="text-[10px] text-gray-500 whitespace-nowrap ml-2">
-            {{ n.created_at|timesince }} ago
-          </div>
-        </div>
 
-        <div class="text-xs text-gray-500 mt-1 line-clamp-2">
-          {{ n.content|truncatechars:100 }}
-        </div>
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <div class="p-8 text-center text-sm text-gray-500">
-    <div class="text-2xl mb-2">🔔</div>
-    No new notifications
+          <div
+            class="text-[10px] {% if not n.is_read %}text-[#a8a8a8]{% else %}text-[#525252]{% endif %} leading-relaxed line-clamp-2">
+            {{ n.content|truncatechars:100 }}
+          </div>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="p-10 text-center flex flex-col items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-[#161616] flex items-center justify-center text-[#525252]">
+        🔔
+      </div>
+      <p class="text-[10px] font-bold uppercase tracking-widest text-[#525252]">Monitoring Sectors Clear</p>
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
 
 </div>

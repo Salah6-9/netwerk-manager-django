@@ -2,105 +2,141 @@
 
 {% block content %}
 
-<h1>Support Tickets</h1>
+<div style="max-width:1000px;margin:auto;display:flex;flex-direction:column;gap:14px;">
 
-<div class="flex justify-between items-center mb-6">
-    <a href="{% url 'create_ticket' %}">
-        <button>Create Ticket</button>
-    </a>
-    {% if request.user.is_staff %}
-    <form method="post" action="{% url 'delete_all_tickets' %}">
-        {% csrf_token %}
-        <button type="submit" class="bg-red-600 hover:bg-red-700  font-bold py-2 px-4 rounded transition duration-200">
-            Delete All Tickets
-        </button>
-    </form>
-</div>
-{%endif%}
-<hr>
+    <!-- HEADER -->
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-dim);padding-bottom:10px;">
+        <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-1);text-transform:uppercase;letter-spacing:0.08em;">
+                Support Tickets
+            </div>
+            <div style="font-size:10px;color:var(--text-3);">
+                Manage and track support requests
+            </div>
+        </div>
 
-<table border="1" cellpadding="6" width="100%">
-
-    <tr>
-        <th>Ticket</th>
-        <th>Device</th>
-        <th>Target</th>
-        <th>Title</th>
-        <th>Status</th>
-        <th>Created</th>
-        <th>Actions</th>
-    </tr>
-
-    {% for ticket in tickets %}
-
-    <tr>
-
-        <td>
-            <a href="{% url 'ticket_detail' ticket.id %}">
-                {{ ticket.ticket_code }}
+        <div style="display:flex;gap:6px;">
+            <a href="{% url 'create_ticket' %}">
+                <button class="scan-btn sb-on">Create</button>
             </a>
-        </td>
 
-        <td>
-
-            {% if ticket.device %}
-            {{ ticket.device.hostname }}
-            {% else %}
-            -
-            {% endif %}
-
-        </td>
-
-        <td>
-            {% if ticket.target_type == 'user' %}
-            {{ ticket.user.username }}
-            {% elif ticket.target_type == 'office' %}
-            <span class="text-blue-600 font-bold">[Office]</span> {{ ticket.office.name }}
-            {% elif ticket.target_type == 'department' %}
-            <span class="text-green-600 font-bold">[Dept]</span> {{ ticket.department.name }}
-            {% endif %}
-        </td>
-
-        <td>
-            {{ ticket.title }}
-        </td>
-
-        <td>
-            <span class="px-2 py-1 rounded-full text-xs font-bold text-white" style="
-                    {% if ticket.status == 'open' %}background-color: #2563eb !important;
-                    {% elif ticket.status == 'in_progress' %}background-color: #f59e0b !important;
-                    {% elif ticket.status == 'resolved' %}background-color: #10b981 !important;
-                    {% elif ticket.status == 'closed' %}background-color: #4b5563 !important;
-                    {% endif %}
-                    color: white !important;
-                ">
-                {{ ticket.get_status_display }}
-            </span>
-        </td>
-
-        <td>
-            {{ ticket.created_at }}
-        </td>
-
-        <td>
-
-            <form method="post" action="{% url 'delete_ticket' ticket.id %}">
+            {% if request.user.is_staff %}
+            <form method="post" action="{% url 'delete_all_tickets' %}">
                 {% csrf_token %}
-                <button style="color:red">Delete</button>
+                <button class="scan-btn sb-off">
+                    Delete All
+                </button>
             </form>
+            {% endif %}
+        </div>
+    </div>
 
-        </td>
+    <!-- TABLE PANEL -->
+    <div class="panel">
 
-    </tr>
+        <div class="panel-hd">
+            <span class="ph-label">Tickets</span>
+        </div>
 
-    {% empty %}
+        <div style="overflow-x:auto;">
 
-    <tr>
-        <td colspan="6">No tickets.</td>
-    </tr>
+            <table>
 
-    {% endfor %}
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Device</th>
+                        <th>Target</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
 
-</table>
+                <tbody>
+
+                    {% for ticket in tickets %}
+                    <tr>
+
+                        <!-- Ticket -->
+                        <td>
+                            <a href="{% url 'ticket_detail' ticket.id %}" style="color:var(--accent);">
+                                {{ ticket.ticket_code }}
+                            </a>
+                        </td>
+
+                        <!-- Device -->
+                        <td style="color:var(--text-2);">
+                            {% if ticket.device %}
+                                {{ ticket.device.hostname }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <!-- Target -->
+                        <td>
+                            {% if ticket.target_type == 'user' %}
+                                {{ ticket.user.username }}
+                            {% elif ticket.target_type == 'office' %}
+                                <span class="badge bb">Office</span> {{ ticket.office.name }}
+                            {% elif ticket.target_type == 'department' %}
+                                <span class="badge bg">Dept</span> {{ ticket.department.name }}
+                            {% endif %}
+                        </td>
+
+                        <!-- Title -->
+                        <td style="color:var(--text-1);">
+                            {{ ticket.title }}
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+                            {% if ticket.status == 'open' %}
+                                <span class="badge bg">Open</span>
+                            {% elif ticket.status == 'in_progress' %}
+                                <span class="badge" style="background:var(--yellow-dim);color:var(--yellow);">In Progress</span>
+                            {% elif ticket.status == 'resolved' %}
+                                <span class="badge bb">Resolved</span>
+                            {% elif ticket.status == 'closed' %}
+                                <span class="badge bd">Closed</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Created -->
+                        <td style="font-size:11px;color:var(--text-3);">
+                            {{ ticket.created_at }}
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <form method="post" action="{% url 'delete_ticket' ticket.id %}">
+                                {% csrf_token %}
+                                <button style="font-size:10px;color:var(--red);">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="padding:24px;text-align:center;color:var(--text-3);">
+                            No tickets found
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

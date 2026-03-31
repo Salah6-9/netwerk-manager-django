@@ -2,89 +2,121 @@
 
 {% block content %}
 
-<h1>Setup Monitoring Agent</h1>
+<div style="max-width:900px; margin:auto; display:flex; flex-direction:column; gap:14px;">
 
-<p>
-    This page allows you to connect your computer to the monitoring system.
-</p>
+    <!-- HEADER -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border-dim);">
+        <div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-1); letter-spacing:0.08em; text-transform:uppercase;">
+                Setup Monitoring Agent
+            </div>
+            <div style="font-size:10px; color:var(--text-3); letter-spacing:0.05em;">
+                Connect your device to the monitoring system
+            </div>
+        </div>
+    </div>
 
-<hr>
+    <!-- TOKEN PANEL -->
+    <div class="panel">
+        <div class="panel-hd">
+            <span class="ph-label">Your User Token</span>
+        </div>
 
-<h2>Your User Token</h2>
+        <div style="padding:12px; display:flex; flex-direction:column; gap:10px;">
 
-<div style="background:#f5f5f5;padding:10px;border:1px solid #ccc;width:fit-content">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <code id="user-token"
+                      style="background:var(--bg-soft); padding:6px 10px; border:1px solid var(--border-dim); border-radius:4px; font-size:11px;">
+                    {{ user_token }}
+                </code>
 
-    <code id="user-token">{{ user_token}}</code>
+                <button onclick="copyToken()"
+                        class="fb"
+                        style="padding:4px 10px;">
+                    Copy
+                </button>
+            </div>
 
-    <button onclick="copyToken()">Copy</button>
+            <div style="font-size:10px; color:var(--text-3);">
+                Use this token to register your device securely.
+            </div>
+
+        </div>
+    </div>
+
+    <!-- INSTALL PANEL -->
+    <div class="panel">
+        <div class="panel-hd">
+            <span class="ph-label">Install the Agent</span>
+        </div>
+
+        <div style="padding:12px;">
+
+            <ol style="font-size:11px; color:var(--text-2); display:flex; flex-direction:column; gap:6px; padding-left:14px;">
+                <li>Download the monitoring agent</li>
+                <li>Extract the archive</li>
+                <li>Open terminal inside the folder</li>
+                <li>Run the registration command</li>
+            </ol>
+
+            <div style="margin-top:10px; background:var(--bg-soft); border:1px solid var(--border-dim); padding:8px; border-radius:4px; font-size:11px;">
+                <code>python -m monitoring_agent.main --register</code>
+            </div>
+
+            <div style="margin-top:6px; font-size:10px; color:var(--text-3);">
+                When prompted, paste your token.
+            </div>
+
+        </div>
+    </div>
+
+    <!-- DOWNLOAD PANEL -->
+    {% load static %}
+    <div class="panel">
+        <div class="panel-hd">
+            <span class="ph-label">Download Agent</span>
+        </div>
+
+        <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
+
+            <div style="font-size:11px; color:var(--text-2);">
+                Latest monitoring agent package
+            </div>
+
+            <a href="{% static 'agent/monitoring_agent.zip' %}">
+                <button class="scan-btn sb-on">
+                    Download
+                </button>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- FLOW PANEL -->
+    <div class="panel">
+        <div class="panel-hd">
+            <span class="ph-label">What Happens Next?</span>
+        </div>
+
+        <div style="padding:12px;">
+
+            <ul style="font-size:11px; color:var(--text-2); display:flex; flex-direction:column; gap:6px;">
+                <li>• The agent sends an enrollment request</li>
+                <li>• Administrator reviews and approves the device</li>
+                <li>• Agent receives authentication token</li>
+                <li>• Device starts sending metrics automatically</li>
+            </ul>
+
+        </div>
+    </div>
 
 </div>
 
-<p>
-    You will need this token to register your device.
-</p>
-
-<hr>
-
-<h2>Install the Agent</h2>
-
-<ol>
-
-    <li>Download the monitoring agent</li>
-
-    <li>Extract the archive</li>
-
-    <li>Open terminal inside the folder</li>
-
-    <li>Run the registration command</li>
-
-</ol>
-
-<pre>
-python -m monitoring_agent.main --register
-</pre>
-
-<p>
-    When prompted paste your token.
-</p>
-
-{%load static%}
-<hr>
-
-<h2>Download Agent</h2>
-
-<a href="{%static 'agent/monitoring_agent.zip' %}">
-    <button>Download Agent</button>
-</a>
-
-<hr>
-
-<h2>What Happens Next?</h2>
-
-<ul>
-
-    <li>The agent sends an enrollment request</li>
-
-    <li>The administrator approves the device</li>
-
-    <li>The agent receives an agent_token</li>
-
-    <li>The device starts sending metrics automatically</li>
-
-</ul>
-
 <script>
-
-    function copyToken() {
-
-        const token = document.getElementById("user-token").innerText;
-
-        navigator.clipboard.writeText(token);
-
-        alert("Token copied to clipboard");
-
-    }
-
+function copyToken() {
+    const token = document.getElementById("user-token").innerText;
+    navigator.clipboard.writeText(token);
+}
 </script>
 
 {% endblock %}

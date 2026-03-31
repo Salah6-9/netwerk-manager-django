@@ -116,34 +116,41 @@ def create_ticket(request):
         description = request.POST.get("description")
 
         if request.user.is_staff:
+            target_type = request.POST.get("target_type", "user")
+            dept_id = request.POST.get("department")
+            off_id = request.POST.get("office")
+            uid = request.POST.get("user")
 
-            department_id = request.POST.get("department")
-            office_id = request.POST.get("office")
-            user_id = request.POST.get("user")
+            # Basic Validation
+            if not dept_id or not dept_id.isdigit():
+                messages.error(request, "A valid Department is required")
+                return redirect("create_ticket")
+            
+            department = get_object_or_404(Department, id=dept_id)
+            office = None
+            user = None
 
-            department = get_object_or_404(Department, id=department_id)
+            if target_type in ["office", "user"]:
+                if not off_id or not off_id.isdigit():
+                    messages.error(request, "A valid Office is required")
+                    return redirect("create_ticket")
+                office = get_object_or_404(Office, id=off_id, department=department)
 
-            office = get_object_or_404(
-                Office,
-                id=office_id,
-                department=department
-            )
-
-            profile = Profile.objects.filter(
-                user_id=user_id,
-                office=office
-            ).first()
-            if not profile:
-                messages.error(request, "Profile not found")
-                # Safe redirect if device_id is missing
-                if device_id:
-                    return redirect("device_details", pk=device_id)
-                return redirect("dashboard")
-
-            user = profile.user
-
+            if target_type == "user":
+                if not uid or not uid.isdigit():
+                    messages.error(request, "A valid User is required")
+                    return redirect("create_ticket")
+                
+                profile = Profile.objects.filter(user_id=uid, office=office).first()
+                if not profile:
+                    messages.error(request, "Selected user profile not found in this office")
+                    return redirect("create_ticket")
+                user = profile.user
         else:
             user = request.user
+            target_type = "user"
+            department = None
+            office = None
 
         # Validate device ownership ONLY if device_id is provided
         device = None
@@ -160,8 +167,6 @@ def create_ticket(request):
         # If no device_id was provided, device remains None, which is allowed by the model
 
         # Create ticket
-        target_type = request.POST.get("target_type", "user")
-        
         ticket_data = {
             "title": title,
             "description": description,

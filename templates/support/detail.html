@@ -2,188 +2,174 @@
 
 {% block content %}
 
-<h1>Ticket {{ ticket.ticket_code }}</h1>
-
-<hr>
-
-<ul>
-
-    <li>User: {{ ticket.user }}</li>
-
-    <li>Device:
-
-        {% if ticket.device %}
-        {{ ticket.device.hostname }}
-        {% else %}
-        -
-        {% endif %}
-
-    </li>
-
-    <li>Status: {{ ticket.status }}</li>
-
-    <li>Created: {{ ticket.created_at }}</li>
-
-</ul>
-<!-- Visual Progress Stepper -->
-<div class="mb-8 mt-4">
-    <div class="flex items-center w-full">
-        {% with status=ticket.status %}
-        <!-- Stage: Open -->
-        <div class="flex-1 text-center">
-            <div
-                class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
-                {% if status == 'open' or status == 'in_progress' or status == 'resolved' or status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
-                1
-            </div>
-            <div class="text-xs mt-1 font-semibold {% if status == 'open' %}text-blue-600{% endif %}">Opened</div>
+<!-- ── HEADER & NAVIGATION ── -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border-dim);">
+    <div class="panel-hd-l">
+        <svg class="ico" style="color:var(--accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+        </svg>
+        <div>
+            <div style="font-size:12px; font-weight:700; color:var(--text-1); letter-spacing:0.1em; text-transform:uppercase;">Resolution Center</div>
+            <div style="font-size:9px; color:var(--text-3); letter-spacing:0.06em; text-transform:uppercase;">Issue: {{ ticket.ticket_code }}</div>
         </div>
-        <div
-            class="flex-1 h-0.5 {% if status == 'in_progress' or status == 'resolved' or status == 'closed' %}bg-blue-600{% else %}bg-gray-200{% endif %}">
-        </div>
-
-        <!-- Stage: In Progress -->
-        <div class="flex-1 text-center">
-            <div
-                class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
-                {% if status == 'in_progress' or status == 'resolved' or status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
-                2
-            </div>
-            <div class="text-xs mt-1 font-semibold {% if status == 'in_progress' %}text-blue-600{% endif %}">In Progress
-            </div>
-        </div>
-        <div
-            class="flex-1 h-0.5 {% if status == 'resolved' or status == 'closed' %}bg-blue-600{% else %}bg-gray-200{% endif %}">
-        </div>
-
-        <!-- Stage: Resolved -->
-        <div class="flex-1 text-center">
-            <div
-                class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
-                {% if status == 'resolved' or status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
-                3
-            </div>
-            <div class="text-xs mt-1 font-semibold {% if status == 'resolved' %}text-blue-600{% endif %}">Resolved</div>
-        </div>
-        <div class="flex-1 h-0.5 {% if status == 'closed' %}bg-blue-600{% else %}bg-gray-200{% endif %}"></div>
-
-        <!-- Stage: Closed -->
-        <div class="flex-1 text-center">
-            <div class="w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold
-                {% if status == 'closed' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
-                4
-            </div>
-            <div class="text-xs mt-1 font-semibold {% if status == 'closed' %}text-blue-600{% endif %}">Closed</div>
-        </div>
-        {% endwith %}
+    </div>
+    <div style="display:flex; gap:8px;">
+        <a href="{% url 'tickets_list' %}" class="fb" style="display:flex; align-items:center; gap:5px; padding:4px 10px;">
+            <svg style="width:10px;height:10px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+            Back to Registry
+        </a>
     </div>
 </div>
 
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <span class="text-sm font-medium text-gray-500">Current Status:</span>
-        <span class="px-3 py-1 ml-2 rounded-full text-sm font-bold text-white" style="
-                {% if ticket.status == 'open' %}background-color: #2563eb !important;
-                {% elif ticket.status == 'in_progress' %}background-color: #f59e0b !important;
-                {% elif ticket.status == 'resolved' %}background-color: #10b981 !important;
-                {% elif ticket.status == 'closed' %}background-color: #4b5563 !important;
+<div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+
+    <!-- ── LEFT COLUMN: WORKFLOW & CONVERSATION ── -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+        
+        <!-- Technical Progress Stepper -->
+        <div class="panel" style="padding:20px 0;">
+            <div style="display:flex; padding:0 30px; position:relative;">
+                {% with status=ticket.status %}
+                
+                <div style="flex:1; text-align:center; z-index:1;">
+                    <div class="avatar" style="margin:0 auto; width:28px; height:28px; font-size:11px; {% if status == 'open' or status == 'in_progress' or status == 'resolved' or status == 'closed' %}background:var(--accent); color:#000; border-color:var(--accent);{% else %}background:var(--bg-row); color:var(--text-3);{% endif %}">1</div>
+                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; margin-top:8px; letter-spacing:0.05em; {% if status == 'open' %}color:var(--accent);{% else %}color:var(--text-3);{% endif %}">Opened</div>
+                </div>
+
+                <div style="position:absolute; left:calc(12.5% + 14px); right:calc(62.5% + 14px); top:14px; height:1px; background:{% if status == 'in_progress' or status == 'resolved' or status == 'closed' %}var(--accent){% else %}var(--border-dim){% endif %}; transition:background 0.3s;"></div>
+
+                <div style="flex:1; text-align:center; z-index:1;">
+                    <div class="avatar" style="margin:0 auto; width:28px; height:28px; font-size:11px; {% if status == 'in_progress' or status == 'resolved' or status == 'closed' %}background:var(--accent); color:#000; border-color:var(--accent);{% else %}background:var(--bg-row); color:var(--text-3);{% endif %}">2</div>
+                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; margin-top:8px; letter-spacing:0.05em; {% if status == 'in_progress' %}color:var(--accent);{% else %}color:var(--text-3);{% endif %}">Active</div>
+                </div>
+
+                <div style="position:absolute; left:calc(37.5% + 14px); right:calc(37.5% + 14px); top:14px; height:1px; background:{% if status == 'resolved' or status == 'closed' %}var(--accent){% else %}var(--border-dim){% endif %}; transition:background 0.3s;"></div>
+
+                <div style="flex:1; text-align:center; z-index:1;">
+                    <div class="avatar" style="margin:0 auto; width:28px; height:28px; font-size:11px; {% if status == 'resolved' or status == 'closed' %}background:var(--green); color:#000; border-color:var(--green);{% else %}background:var(--bg-row); color:var(--text-3);{% endif %}">3</div>
+                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; margin-top:8px; letter-spacing:0.05em; {% if status == 'resolved' %}color:var(--green);{% else %}color:var(--text-3);{% endif %}">Resolved</div>
+                </div>
+
+                <div style="position:absolute; left:calc(62.5% + 14px); right:calc(12.5% + 14px); top:14px; height:1px; background:{% if status == 'closed' %}var(--green){% else %}var(--border-dim){% endif %}; transition:background 0.3s;"></div>
+
+                <div style="flex:1; text-align:center; z-index:1;">
+                    <div class="avatar" style="margin:0 auto; width:28px; height:28px; font-size:11px; {% if status == 'closed' %}background:var(--text-2); color:#000; border-color:var(--text-2);{% else %}background:var(--bg-row); color:var(--text-3);{% endif %}">4</div>
+                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; margin-top:8px; letter-spacing:0.05em; {% if status == 'closed' %}color:var(--text-1);{% else %}color:var(--text-3);{% endif %}">Archived</div>
+                </div>
+
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Conversation History -->
+        <div class="panel">
+            <div class="panel-hd">
+                <div class="panel-hd-l">
+                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.303.025-.607.039-.913.041a9.967 9.967 0 01-3.189-1.393L12 19.5l-3.668-3.668a9.967 9.967 0 01-3.189 1.393A24.57 24.57 0 014.23 17.18c-1.133-.092-1.98-1.057-1.98-2.193v-4.286c0-.969.616-1.813 1.5-2.097a44.81 44.81 0 0116.52 0z" /></svg>
+                    <span class="ph-label">Transmission Log</span>
+                </div>
+            </div>
+            <div style="padding:16px; display:flex; flex-direction:column; gap:12px; background:rgba(0,0,0,0.2);">
+                <div style="background:var(--bg-row); padding:14px; border-left:2px solid var(--accent); border-radius:4px; margin-bottom:10px;">
+                    <div style="font-size:9px; font-weight:700; color:var(--accent); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">Original Signal Entry</div>
+                    <div style="font-size:13px; line-height:1.6; color:var(--text-1);">{{ ticket.description }}</div>
+                </div>
+
+                {% for msg in ticket.messages.all %}
+                <div style="display:flex; flex-direction:column; {% if msg.author.is_staff %}align-items:flex-end;{% else %}align-items:flex-start;{% endif %}">
+                    {% if "Status updated" in msg.content %}
+                    <div style="width:100%; text-align:center; margin:10px 0; display:flex; align-items:center; gap:10px;">
+                        <div style="flex:1; height:1px; background:var(--border-dim);"></div>
+                        <span style="font-size:10px; font-style:italic; color:var(--text-3);">{{ msg.content }}</span>
+                        <div style="flex:1; height:1px; background:var(--border-dim);"></div>
+                    </div>
+                    {% else %}
+                    <div style="max-width:85%; background:{% if msg.author.is_staff %}rgba(88,166,255,0.06){% else %}var(--bg-row){% endif %}; border:1px solid {% if msg.author.is_staff %}var(--accent-dim){% else %}var(--border-dim){% endif %}; border-radius:6px; padding:10px 14px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                            <div class="avatar" style="width:18px; height:18px; font-size:8px;">{{ msg.author.username|first }}</div>
+                            <span style="font-size:11px; font-weight:700; color:{% if msg.author.is_staff %}var(--accent){% else %}var(--text-1){% endif %};">
+                                {{ msg.author.username }}
+                                {% if msg.author.is_staff %}<span style="font-size:8px; opacity:0.6; margin-left:4px;">STAFF</span>{% endif %}
+                            </span>
+                            <span style="font-size:10px; color:var(--text-3); margin-left:auto; font-variant-numeric:tabular-nums;">{{ msg.created_at|date:"H:i" }}</span>
+                        </div>
+                        <div style="font-size:12px; line-height:1.5; color:var(--text-2);">{{ msg.content }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div style="text-align:center; padding:30px; color:var(--text-3); font-size:11px;">Awaiting initial protocol response...</div>
+                {% endfor %}
+            </div>
+
+            <!-- Reply Form -->
+            <div style="padding:13px; border-top:1px solid var(--border-dim);">
+                <form method="post" action="{% url 'add_ticket_message' ticket.id %}">
+                    {% csrf_token %}
+                    <textarea name="content" rows="3" placeholder="Input resolution data..." style="width:100%; background:var(--bg-base); border:1px solid var(--border-dim); border-radius:6px; padding:10px; color:var(--text-1); font-size:12px; font-family:inherit; resize:none; margin-bottom:10px; outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-dim)'" required></textarea>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button type="submit" class="scan-btn sb-on" style="width:auto; padding:0 20px;">Transmit Signal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── RIGHT COLUMN: METADATA & ACTIONS ── -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="panel">
+            <div class="panel-hd">
+                <div class="panel-hd-l">
+                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                    <span class="ph-label">Signal Origin</span>
+                </div>
+            </div>
+            <div style="padding:6px 0;">
+                <div class="kv"><span class="kv-k">Requester</span><span class="kv-v">{{ ticket.user.username }}</span></div>
+                <div class="kv"><span class="kv-k">Device</span><span class="kv-v">{% if ticket.device %}<a href="{% url 'device_details' ticket.device.id %}" style="color:var(--accent);">{{ ticket.device.hostname }}</a>{% else %}-{% endif %}</span></div>
+                <div class="kv"><span class="kv-k">Status</span><span class="kv-v">{% if ticket.status == 'open' %}<span class="badge bb">Open</span>{% elif ticket.status == 'in_progress' %}<span class="badge" style="background:var(--yellow-dim); color:var(--yellow);">Active</span>{% elif ticket.status == 'resolved' %}<span class="badge bg">Resolved</span>{% else %}<span class="badge bd">Archived</span>{% endif %}</span></div>
+                <div class="kv"><span class="kv-k">Timestamp</span><span class="kv-v">{{ ticket.created_at|date:"d M Y" }}</span></div>
+            </div>
+        </div>
+
+        {% if request.user.is_staff %}
+        <div class="panel">
+            <div class="panel-hd">
+                <div class="panel-hd-l">
+                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0L12 3m0 0l-7.5 9" /></svg>
+                    <span class="ph-label">Action Protocol</span>
+                </div>
+            </div>
+            <div style="padding:14px; display:flex; flex-direction:column; gap:8px;">
+                {% if ticket.status == 'open' %}
+                <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+                    {% csrf_token %}
+                    <button name="status" value="in_progress" class="scan-btn sb-on">Initialize Resolution</button>
+                </form>
                 {% endif %}
-                color: white !important;
-            ">
-            {{ ticket.get_status_display }}
-        </span>
-    </div>
-
-    {% if request.user.is_staff %}
-    <div class="flex gap-2">
-        {% if ticket.status == 'open' %}
-        <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
-            {% csrf_token %}
-            <button name="status" value="in_progress"
-                class="px-4 py-2 rounded text-sm font-bold transition hover:opacity-90 shadow-md"
-                style="background-color: #2563eb !important; color: white !important;">
-                Start Progress
-            </button>
-        </form>
-        {% endif %}
-
-        {% if ticket.status != 'resolved' and ticket.status != 'closed' %}
-        <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
-            {% csrf_token %}
-            <button name="status" value="resolved"
-                class="px-4 py-2 rounded text-sm font-bold transition hover:opacity-90 shadow-md"
-                style="background-color: #16a34a !important; color: white !important;">
-                Resolve
-            </button>
-        </form>
-        {% endif %}
-
-        {% if ticket.status != 'closed' %}
-        <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
-            {% csrf_token %}
-            <button name="status" value="closed"
-                class="px-4 py-2 rounded text-sm font-bold transition hover:opacity-90 shadow-md"
-                style="background-color: #1f2937 !important; color: white !important;">
-                Close Ticket
-            </button>
-        </form>
-        {% endif %}
-    </div>
-    {% endif %}
-</div>
-
-<form method="post" action="{% url 'delete_ticket' ticket.id %}">
-    {% csrf_token %}
-    <button type="submit" onclick="return confirm('Delete this ticket?')">
-        Delete Ticket
-    </button>
-</form>
-<hr>
-
-<h3>Description</h3>
-
-<p>
-    {{ ticket.description }}
-</p>
-
-<h2>Conversation</h2>
-
-<div style="border:1px solid #ccc;padding:15px;margin-bottom:20px">
-
-    {% for msg in ticket.messages.all %}
-
-    <div
-        class="mb-4 p-4 rounded-lg {% if '📝 Status updated' in msg.content %}bg-blue-50 border-l-4 border-blue-400 italic text-sm{% elif msg.author.is_staff %}bg-gray-100 ml-8 border-r-4 border-gray-400{% else %}bg-white border-l-4 border-blue-600 mr-8{% endif %} shadow-sm">
-        <div class="flex justify-between items-center mb-2">
-            <span class="font-bold {% if msg.author.is_staff %}text-blue-700{% endif %}">
-                {{ msg.author.username }}
-                {% if msg.author.is_staff %}<span class="text-[10px] bg-blue-100 px-1 rounded">STAFF</span>{% endif %}
-            </span>
-            <small class="text-gray-500">{{ msg.created_at|date:"Y-m-d H:i" }}</small>
+                {% if ticket.status != 'resolved' and ticket.status != 'closed' %}
+                <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+                    {% csrf_token %}
+                    <button name="status" value="resolved" class="scan-btn" style="background:var(--green); color:#000;">Mark as Resolved</button>
+                </form>
+                {% endif %}
+                {% if ticket.status != 'closed' %}
+                <form method="post" action="{% url 'update_ticket_status' ticket.id %}">
+                    {% csrf_token %}
+                    <button name="status" value="closed" class="scan-btn sb-off">Archive Record</button>
+                </form>
+                {% endif %}
+            </div>
         </div>
-        <p class="text-gray-800">{{ msg.content }}</p>
+        {% endif %}
+
+        <div style="margin-top:auto; padding:10px;">
+            <form method="post" action="{% url 'delete_ticket' ticket.id %}" onsubmit="return confirm('Purge this record permanently?')">
+                {% csrf_token %}
+                <button type="submit" style="width:100%; background:none; border:none; border-bottom:1px solid transparent; color:var(--red); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:5px; cursor:pointer;" onmouseover="this.style.borderBottomColor='var(--red)'" onmouseout="this.style.borderBottomColor='transparent'">Purge Record</button>
+            </form>
+        </div>
     </div>
-
-    {% empty %}
-
-    <p>No messages yet.</p>
-
-    {% endfor %}
-
 </div>
-<h3>Add Reply</h3>
 
-<form method="post" action="{% url 'add_ticket_message' ticket.id %}">
-
-    {% csrf_token %}
-
-    <textarea name="content" rows="4" style="width:100%" required></textarea>
-
-    <br><br>
-
-    <button type="submit">
-        Send Reply
-    </button>
-
-</form>
 {% endblock %}

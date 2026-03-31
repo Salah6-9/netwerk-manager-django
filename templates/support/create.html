@@ -2,181 +2,182 @@
 
 {% block content %}
 
-<h1>Create Support Ticket</h1>
-<input type="hidden" id="device-id" value="{{ device.id|default:'' }}">
+<div style="max-width:800px;margin:auto;display:flex;flex-direction:column;gap:14px;">
 
-<form method="post">
-    {% csrf_token %}
-    {% if request.user.is_staff %}
-
-    <label>Target Type</label>
-    <br>
-    <select id="target_type" name="target_type">
-        <option value="user" selected>Specific User</option>
-        <option value="office">Entire Office</option>
-        <option value="department">Entire Department</option>
-    </select>
-    <br><br>
-
-    <div id="div_department">
-        <label>Department</label>
-        <br>
-        <select id="department" name="department">
-            <option value="">Select Department</option>
-            {% for d in departments %}
-            <option value="{{ d.id }}" {% if selected_department and d.id == selected_department.id %}selected{% endif %}>
-                {{ d.name }}
-            </option>
-            {% endfor %}
-        </select>
-        <br><br>
+    <!-- HEADER -->
+    <div style="border-bottom:1px solid var(--border-dim);padding-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-1);text-transform:uppercase;letter-spacing:0.08em;">
+            Create Support Ticket
+        </div>
+        <div style="font-size:10px;color:var(--text-3);">
+            Report an issue or request support
+        </div>
     </div>
 
-    <div id="div_office">
-        <label>Office</label>
-        <br>
-        <select id="office" name="office">
-            {% if selected_office %}
-            <option value="{{selected_office.id}}" selected>
-                {{selected_office.name}}
-            </option>
-            {% else %}
-            <option value="">Select Office</option>
+    <form method="post" class="panel">
+        {% csrf_token %}
+        <input type="hidden" id="device-id" value="{{ device.id|default:'' }}">
+
+        <!-- TARGET (ADMIN ONLY) -->
+        {% if request.user.is_staff %}
+        <div class="panel-hd">
+            <span class="ph-label">Target</span>
+        </div>
+
+        <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
+
+            <div>
+                <label class="kv-k">Target Type</label>
+                <select id="target_type" name="target_type" class="input">
+                    <option value="user" selected>Specific User</option>
+                    <option value="office">Entire Office</option>
+                    <option value="department">Entire Department</option>
+                </select>
+            </div>
+
+            <div id="div_department">
+                <label class="kv-k">Department</label>
+                <select id="department" name="department" class="input">
+                    <option value="">Select Department</option>
+                    {% for d in departments %}
+                    <option value="{{ d.id }}">{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="div_office">
+                <label class="kv-k">Office</label>
+                <select id="office" name="office" class="input">
+                    <option value="">Select Office</option>
+                </select>
+            </div>
+
+            <div id="div_user">
+                <label class="kv-k">User</label>
+                <select id="user" name="user" class="input">
+                    <option value="">Select User</option>
+                </select>
+            </div>
+
+            {% if device %}
+            <div style="background:var(--bg-soft);padding:8px;border:1px solid var(--border-dim);border-radius:4px;">
+                <strong>Device:</strong>
+                {{ device.hostname }} ({{ device.mac }})
+                <input type="hidden" name="device" value="{{ device.id }}">
+            </div>
             {% endif %}
-        </select>
-        <br><br>
-    </div>
 
-    <div id="div_user">
-        <label>User</label>
-        <br>
-        <select id="user" name="user">
-            {% if selected_user %}
-            <option value="{{selected_user.id}}" selected>
-                {{selected_user.username}}
-            </option>
-            {% else %}
-            <option value="">Select User</option>
-            {% endif %}
-        </select>
-        <br><br>
-    </div>
+        </div>
+        {% endif %}
 
-    {% if device %}
-    <div style="background:#f5f5f5;padding:10px;margin-bottom:15px">
-        <strong>Device:</strong>
-        {{ device.hostname }} ({{ device.mac }})
-        <input type="hidden" name="device" value="{{ device.id }}">
-    </div>
-    {% endif %}
+        <!-- CONTENT -->
+        <div class="panel-hd">
+            <span class="ph-label">Ticket Details</span>
+        </div>
 
-    {%endif%}
-    <br><br>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
 
-    <label>Title</label>
-    <br>
+            <div>
+                <label class="kv-k">Title</label>
+                <input type="text" name="title" required class="input">
+            </div>
 
-    <input type="text" name="title" required>
+            <div>
+                <label class="kv-k">Description</label>
+                <textarea name="description" rows="5" class="input"></textarea>
+            </div>
 
-    <br><br>
+        </div>
 
-    <label>Description</label>
-    <br>
+        <!-- ACTION -->
+        <div style="padding:12px;border-top:1px solid var(--border-dim);display:flex;justify-content:flex-end;">
+            <button type="submit" class="scan-btn sb-on">
+                Create Ticket
+            </button>
+        </div>
 
-    <textarea name="description" rows="6"></textarea>
+    </form>
 
-    <br><br>
+</div>
 
-    <button type="submit">
-        Create Ticket
-    </button>
-
-</form>
+<!-- SIMPLE INPUT STYLE -->
+<style>
+.input {
+    width:100%;
+    padding:6px 8px;
+    border:1px solid var(--border-dim);
+    background:var(--bg-soft);
+    border-radius:4px;
+    font-size:11px;
+    color:var(--text-1);
+}
+.input:focus {
+    outline:none;
+    border-color:var(--accent);
+}
+</style>
 
 <script>
 
-    const deviceId = document.getElementById("device-id").value;
-    const targetTypeSelect = document.getElementById("target_type");
-    const divOffice = document.getElementById("div_office");
-    const divUser = document.getElementById("div_user");
-    const officeSelect = document.getElementById("office");
-    const userSelect = document.getElementById("user");
-    const deptSelect = document.getElementById("department");
+const deviceId = document.getElementById("device-id").value;
+const targetTypeSelect = document.getElementById("target_type");
+const divOffice = document.getElementById("div_office");
+const divUser = document.getElementById("div_user");
+const officeSelect = document.getElementById("office");
+const userSelect = document.getElementById("user");
+const deptSelect = document.getElementById("department");
 
-    function updateVisibility() {
-        if (!targetTypeSelect) return;
-        const targetType = targetTypeSelect.value;
+function updateVisibility() {
+    if (!targetTypeSelect) return;
 
-        if (targetType === "department") {
-            divOffice.style.display = "none";
-            divUser.style.display = "none";
-            officeSelect.required = false;
-            userSelect.required = false;
-            deptSelect.required = true;
-        } else if (targetType === "office") {
-            divOffice.style.display = "block";
-            divUser.style.display = "none";
-            officeSelect.required = true;
-            userSelect.required = false;
-            deptSelect.required = true;
-        } else {
-            divOffice.style.display = "block";
-            divUser.style.display = "block";
-            officeSelect.required = true;
-            userSelect.required = true;
-            deptSelect.required = true;
-        }
-    }
+    const type = targetTypeSelect.value;
 
-    if (targetTypeSelect) {
-        targetTypeSelect.addEventListener("change", updateVisibility);
-        updateVisibility();
-    }
+    divOffice.style.display = (type !== "department") ? "block" : "none";
+    divUser.style.display = (type === "user") ? "block" : "none";
 
-    // إذا لم تكن التذكرة قادمة من جهاز
-    if (!deviceId) {
+    officeSelect.required = (type !== "department");
+    userSelect.required = (type === "user");
+    deptSelect.required = true;
+}
 
-        document.getElementById("department").addEventListener("change", function () {
+if (targetTypeSelect) {
+    targetTypeSelect.addEventListener("change", updateVisibility);
+    updateVisibility();
+}
 
-            let departmentId = this.value;
-            if (!departmentId) return;
+if (!deviceId && deptSelect) {
 
-            fetch(`/support/api/offices/${departmentId}/`)
-                .then(response => response.json())
-                .then(data => {
+    deptSelect.addEventListener("change", function () {
+        let id = this.value;
+        if (!id) return;
 
-                    officeSelect.innerHTML = "<option value=''>Select Office</option>";
-                    userSelect.innerHTML = "<option value=''>Select User</option>";
+        fetch(`/support/api/offices/${id}/`)
+            .then(r => r.json())
+            .then(data => {
+                officeSelect.innerHTML = "<option value=''>Select Office</option>";
+                userSelect.innerHTML = "<option value=''>Select User</option>";
 
-                    data.forEach(function (office) {
-                        officeSelect.innerHTML += `<option value="${office.id}">${office.name}</option>`;
-                    });
-
+                data.forEach(o => {
+                    officeSelect.innerHTML += `<option value="${o.id}">${o.name}</option>`;
                 });
+            });
+    });
 
-        });
+    officeSelect.addEventListener("change", function () {
+        let id = this.value;
+        if (!id) return;
 
+        fetch(`/support/api/users/${id}/`)
+            .then(r => r.json())
+            .then(data => {
+                userSelect.innerHTML = "<option value=''>Select User</option>";
 
-        document.getElementById("office").addEventListener("change", function () {
-
-            let officeId = this.value;
-            if (!officeId) return;
-
-            fetch(`/support/api/users/${officeId}/`)
-                .then(response => response.json())
-                .then(data => {
-
-                    userSelect.innerHTML = "<option value=''>Select User</option>";
-
-                    data.forEach(function (user) {
-                        userSelect.innerHTML += `<option value="${user.id}">${user.username}</option>`;
-                    });
-
+                data.forEach(u => {
+                    userSelect.innerHTML += `<option value="${u.id}">${u.username}</option>`;
                 });
-
-        });
-
-    }
+            });
+    });
+}
 
 </script>
 
