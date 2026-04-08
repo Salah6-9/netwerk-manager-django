@@ -6,10 +6,20 @@
 <div
     style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid var(--border-dim);">
     <div style="display:flex; align-items:center; gap:12px;">
-        <div class="avatar" style="width:36px; height:36px; font-size:14px;">{{ device.hostname|first }}</div>
-        <div>
-            <div style="font-size:14px; font-weight:700; color:var(--text-1); letter-spacing:0.02em;">{{ device.hostname
-                }}</div>
+<div class="avatar" style="width:36px; height:36px; font-size:14px;">
+    {% if device.hostname %}
+        {{ device.hostname|first|upper }}
+    {% else %}
+        ?
+    {% endif %}
+</div>        <div>
+            <div style="font-size:14px; font-weight:700; color:var(--text-1); letter-spacing:0.02em;">
+    {% if device.hostname %}
+        {{ device.hostname }}
+    {% else %}
+        Unnamed Device
+    {% endif %}
+</div>
             <div
                 style="font-size:10px; color:var(--text-3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.05em;">
                 UID: {{ device.id }} • {{ device.os|default:"Generic OS" }}
@@ -58,11 +68,12 @@
     </div>
     <div class="stat-card" style="border-color: var(--red-dim);">
         <p class="sc-label" style="color: var(--red);">Core Temp</p>
-        <p class="sc-num" id="temp-stat">{% if status %}{{ status.cpu_temp }}{% else %}0{% endif %}<span
+        <p class="sc-num" id="temp-stat">{% if status %}{{ status.cpu_temperature }}{% else %}0{% endif %}<span
                 style="font-size:12px;opacity:0.5;">°C</span></p>
         <div class="sc-bar">
             <div class="sc-fill" id="temp-bar"
-                style="width:{% if status %}{{ status.cpu_temp }}{% else %}0{% endif %}%; background:var(--red);"></div>
+                style="width:{% if status %}{{ status.cpu_temperature }}{% else %}0{% endif %}%; background:var(--red);">
+            </div>
         </div>
     </div>
 </div>
@@ -70,6 +81,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- ── LEFT: HISTORICAL DATA ──────────────── -->
     <div class="lg:col-span-2 space-y-6">
+        <!-- CPU Chart -->
         <div class="panel">
             <div class="panel-hd">
                 <div class="panel-hd-l">
@@ -77,24 +89,48 @@
                         <path
                             d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                     </svg>
-                    <span class="ph-label">Utilization Timeline</span>
+                    <span class="ph-label">CPU Usage</span>
                 </div>
             </div>
-            <div class="p-4 grid grid-cols-1 gap-8">
-                <div>
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">CPU & RAM Performance
-                    </p>
-                    <canvas id="performanceChart" style="max-height:220px;"></canvas>
+            <div class="p-4" style="height:220px;">
+                <canvas id="cpuChart"></canvas>
+            </div>
+        </div>
+
+        <!-- RAM Chart -->
+        <div class="panel">
+            <div class="panel-hd">
+                <div class="panel-hd-l">
+                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path
+                            d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" />
+                    </svg>
+                    <span class="ph-label">RAM Usage</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Disk Pulse</p>
-                        <canvas id="diskChart" style="max-height:140px;"></canvas>
-                    </div>
-                    <div>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Thermal Vector</p>
-                        <canvas id="tempChart" style="max-height:140px;"></canvas>
-                    </div>
+            </div>
+            <div class="p-4" style="height:220px;">
+                <canvas id="ramChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Disk + Temp Charts -->
+        <div class="panel">
+            <div class="panel-hd">
+                <div class="panel-hd-l">
+                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="ph-label">Disk & Temperature</span>
+                </div>
+            </div>
+            <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Disk Pulse</p>
+                    <div style="height:140px;"><canvas id="diskChart"></canvas></div>
+                </div>
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Thermal Vector</p>
+                    <div style="height:140px;"><canvas id="tempChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -107,121 +143,41 @@
                     </svg>
                     <span class="ph-label">Recent Metrics Log</span>
                 </div>
+                <span
+                    style="font-size:9px; color:var(--text-3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.05em;">Last
+                    15 records</span>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>CPU</th>
-                        <th>RAM</th>
-                        <th>Disk</th>
-                        <th>Temp</th>
-                        <th style="text-align:right;">Timestamp</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for m in metrics %}
-                    <tr>
-                        <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.cpu_usage }}%</td>
-                        <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.ram_usage }}%</td>
-                        <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.disk_usage }}%</td>
-                        <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.cpu_temp }}°C</td>
-                        <td style="text-align:right; color:var(--text-3); font-size:10px;">{{ m.timestamp|date:"H:i:s"
-                            }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" style="text-align:center; padding:30px; color:var(--text-3);">Initial telemetry
-                            pending...</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ── RIGHT: INFO & ALERTS ────────────────── -->
-    <div class="space-y-6">
-        <div class="panel">
-            <div class="panel-hd">
-                <div class="panel-hd-l">
-                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path
-                            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                    </svg>
-                    <span class="ph-label">Network Coordinates</span>
-                </div>
-            </div>
-            <div class="p-5 space-y-4">
-                <div class="flex justify-between items-center border-b border-[#21262d] pb-3">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Connectivity</span>
-                    {% if device.status == "online" %}
-                    <span class="badge bg"><span class="dot dg dp"></span>Active</span>
-                    {% elif device.status == "offline" %}
-                    <span class="badge br"><span class="dot dr"></span>Offline</span>
-                    {% else %}
-                    <span class="badge bd"><span class="dot dd"></span>Unknown</span>
-                    {% endif %}
-                </div>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-start">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">IP Address</span>
-                        <span style="font-family:var(--font-mono); color:var(--text-1); font-size:11px;">{{ device.ip
-                            }}</span>
-                    </div>
-                    <div class="flex justify-between items-start">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">MAC Identity</span>
-                        <span style="font-family:var(--font-mono); color:var(--text-3); font-size:10px;">{{ device.mac
-                            }}</span>
-                    </div>
-                    <div class="flex justify-between items-start">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Signal
-                            Source</span>
-                        <span style="color:var(--text-1); font-size:11px;">{{ device.office|default:"Unmapped" }}</span>
-                    </div>
-                    <div class="flex justify-between items-start">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Custodian</span>
-                        <span style="color:var(--text-1); font-size:11px;">{{ device.user.username }}</span>
-                    </div>
-                </div>
-                <div class="pt-2 border-t border-[#21262d] space-y-2">
-                    <div class="flex justify-between items-center text-[9px] text-slate-600">
-                        <span>LAST HEARTBEAT</span>
-                        <span>{{ device.last_agent_heartbeat|date:"Y-m-d H:i:s"|default:"VOID" }}</span>
-                    </div>
-                    <div class="flex justify-between items-center text-[9px] text-slate-600">
-                        <span>LAST SCAN EVENT</span>
-                        <span>{{ device.last_scan_seen|date:"Y-m-d H:i:s"|default:"VOID" }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-hd">
-                <div class="panel-hd-l">
-                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path
-                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                    </svg>
-                    <span class="ph-label">Vector Alerts</span>
-                </div>
-            </div>
-            <div style="max-height:350px; overflow-y:auto;">
-                <table class="text-[11px]">
+            <div style="max-height:300px; overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CPU</th>
+                            <th>RAM</th>
+                            <th>Disk</th>
+                            <th>Temp</th>
+                            <th style="text-align:right;">Timestamp</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        {% for alert in alerts %}
-                        <tr class="hover:bg-red-500/5">
-                            <td class="p-3">
-                                <div class="text-[#f85149] font-bold mb-0.5">{{ alert.title }}</div>
-                                <div class="text-[9px] text-slate-600 uppercase tracking-tighter">{{
-                                    alert.created_at|timesince }} ago</div>
+                        {% for m in metrics|slice:":15" %}
+                        <tr>
+                            <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.cpu_usage }}%</td>
+                            <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.ram_usage }}%</td>
+                            <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.disk_usage }}%</td>
+                            <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.cpu_temperature }}°C
                             </td>
+<td style="text-align:right; color:var(--text-3); font-size:10px;">
+    {% if m.timestamp %}
+        {{ m.timestamp|date:"H:i:s" }}
+    {% else %}
+        —
+    {% endif %}
+</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td
-                                style="text-align:center; padding:30px; color:var(--text-3); text-[10px]; uppercase tracking-widest;">
-                                Integrity Optimal</td>
+                            <td colspan="5" style="text-align:center; padding:30px; color:var(--text-3);">Initial
+                                telemetry pending...</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -229,94 +185,219 @@
             </div>
         </div>
     </div>
+
+    <!-- ── RIGHT: INFO & ALERTS ──────────────── -->
+    <div class="space-y-6">
+
+        <!-- Network Coordinates -->
+        <div class="panel">
+            <div class="panel-hd">
+                <div class="panel-hd-l">
+                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path
+                            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                    </svg>
+                    <span class="ph-label">Device Info</span>
+                </div>
+            </div>
+            <div class="p-4 space-y-3">
+
+                <!-- Status Row -->
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid var(--border-dim);">
+                    <span
+                        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Status</span>
+                    {% if device.status == "online" %}
+                    <span class="badge bg"><span class="dot dg dp"></span>Online</span>
+                    {% elif device.status == "offline" %}
+                    <span class="badge br"><span class="dot dr"></span>Offline</span>
+                    {% else %}
+                    <span class="badge bd"><span class="dot dd"></span>Unknown</span>
+                    {% endif %}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
+    <span
+        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
+        IP
+    </span>
+    <span style="font-family:var(--font-mono); color:var(--text-1); font-size:11px;">
+        {% if device.ip %}
+            {{ device.ip }}
+        {% else %}
+            —
+        {% endif %}
+    </span>
 </div>
+
+<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
+    <span
+        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
+        MAC
+    </span>
+    <span style="font-family:var(--font-mono); color:var(--text-3); font-size:9px;">
+        {% if device.mac %}
+            {{ device.mac }}
+        {% else %}
+            —
+        {% endif %}
+    </span>
+</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
+                    <span
+                        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Office</span>
+                    <span style="color:var(--text-1); font-size:11px;">{{ device.office|default:"—" }}</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
+                    <span
+                        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">User</span>
+                    <span style="color:var(--text-1); font-size:11px;">{{ device.user.username }}</span>
+                </div>
+
+                <!-- Timestamps -->
+                <div
+                    style="border-top:1px solid var(--border-dim); padding-top:10px; margin-top:4px; display:flex; flex-direction:column; gap:6px;">
+                    <div style="display:flex; justify-content:space-between;">
+    <span
+        style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
+        Last Heartbeat
+    </span>
+    <span style="font-family:var(--font-mono); font-size:9px; color:var(--text-3);">
+        {% if device.last_agent_heartbeat %}
+            {{ device.last_agent_heartbeat|date:"d/m H:i" }}
+        {% else %}
+            —
+        {% endif %}
+    </span>
+</div>
+
+<div style="display:flex; justify-content:space-between;">
+    <span
+        style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
+        Last Scan
+    </span>
+    <span style="font-family:var(--font-mono); font-size:9px; color:var(--text-3);">
+        {% if device.last_scan_seen %}
+            {{ device.last_scan_seen|date:"d/m H:i" }}
+        {% else %}
+            —
+        {% endif %}
+    </span>
+</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="panel">
+            <div class="panel-hd">
+                <div class="panel-hd-l">
+                    <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path
+                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                    <span class="ph-label">Alerts</span>
+                </div>
+            </div>
+            <div style="max-height:350px; overflow-y:auto;">
+                {% for alert in alerts %}
+                <div
+                    style="display:flex; align-items:flex-start; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border-dim);">
+                    <div
+                        style="width:6px; height:6px; border-radius:50%; background:#f85149; margin-top:5px; flex-shrink:0;">
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:11px; font-weight:600; color:#f85149; margin-bottom:2px;">
+    {% if alert.title %}
+        {{ alert.title }}
+    {% else %}
+        Untitled Alert
+    {% endif %}
+</div>
+                        <div
+                            style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
+                            {{ alert.created_at|timesince }} ago</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align:center; padding:30px 0; color:var(--text-3);">
+                    <svg style="width:24px; height:24px; margin:0 auto 8px; opacity:0.4;" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">No Active Alerts</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div><!-- end right column -->
+</div><!-- end grid -->
+
 
 <script>
     const chartInstances = {};
     const chartTheme = {
-        font: "'JetBrains Mono', monospace",
         grid: "#30363d",
         text: "#8b949e"
     };
 
-    function buildChart(canvasId, label, color, timestamps, values, options = {}) {
-        const ctx = document.getElementById(canvasId);
-        if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+    function buildChart(id, color, labels, data) {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
 
-        chartInstances[canvasId] = new Chart(ctx, {
+        const ctx = canvas.getContext("2d");
+
+        if (chartInstances[id]) chartInstances[id].destroy();
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, color + "66");
+        gradient.addColorStop(1, color + "05");
+
+        chartInstances[id] = new Chart(ctx, {
             type: "line",
             data: {
-                labels: timestamps,
+                labels: labels,
                 datasets: [{
-                    label: label,
-                    data: values,
+                    data: data,
                     borderColor: color,
-                    backgroundColor: color + "10",
+                    backgroundColor: gradient,
                     fill: true,
                     tension: 0.4,
-                    borderWidth: 1.5,
-                    pointRadius: 0,
-                    pointHoverRadius: 4
+                    borderWidth: 2,
+                    pointRadius: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     x: {
-                        display: canvasId === "performanceChart",
-                        grid: { color: chartTheme.grid, drawBorder: false },
-                        ticks: { color: chartTheme.text, font: { size: 9, family: chartTheme.font } }
+                        display: true,
+                        grid: { color: chartTheme.grid },
+                        ticks: { color: chartTheme.text, font: { size: 9 }, maxTicksLimit: 8 }
                     },
                     y: {
                         min: 0,
                         max: 100,
-                        grid: { color: chartTheme.grid, drawBorder: false },
-                        ticks: { color: chartTheme.text, font: { size: 9, family: chartTheme.font } }
+                        grid: { color: chartTheme.grid },
+                        ticks: { color: chartTheme.text, font: { size: 9 } }
                     }
-                },
-                ...options
+                }
             }
         });
     }
 
     function renderCharts(data) {
-        // Combined Performance Chart
-        buildChart("performanceChart", "CPU", "#58a6ff", data.timestamps, data.cpu, {
-            data: {
-                labels: data.timestamps,
-                datasets: [
-                    {
-                        label: "CPU",
-                        data: data.cpu,
-                        borderColor: "#58a6ff",
-                        backgroundColor: "#58a6ff10",
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 1.5,
-                        pointRadius: 0
-                    },
-                    {
-                        label: "RAM",
-                        data: data.ram,
-                        borderColor: "#3fb950",
-                        backgroundColor: "#3fb95010",
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 1.5,
-                        pointRadius: 0
-                    }
-                ]
-            }
-        });
+        buildChart("cpuChart", "#58a6ff", data.timestamps, data.cpu);
+        buildChart("ramChart", "#3fb950", data.timestamps, data.ram);
+        buildChart("diskChart", "#f1e05a", data.timestamps, data.disk);
+        buildChart("tempChart", "#f85149", data.timestamps, data.temperature);
 
-        buildChart("diskChart", "Disk", "#f1e05a", data.timestamps, data.disk);
-        buildChart("tempChart", "Temp", "#f85149", data.timestamps, data.temperature);
-
-        // Update real-time stats
         if (data.cpu.length > 0) {
             const lastCpu = data.cpu[data.cpu.length - 1];
             const lastRam = data.ram[data.ram.length - 1];
@@ -338,7 +419,7 @@
         fetch("/api/device-metrics/{{ device.id }}/?range_minutes=60")
             .then(r => r.json())
             .then(data => renderCharts(data))
-            .catch(err => console.warn("Log Intercept Failure:", err));
+            .catch(err => console.warn("Metrics fetch failed:", err));
     }
 
     fetchMetrics();

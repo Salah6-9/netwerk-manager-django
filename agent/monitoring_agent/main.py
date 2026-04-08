@@ -14,9 +14,9 @@ def register():
 
     token = input("Enter device token: ").strip()
 
-    if not re.fullmatch(r"[a-f0-9]{64}", token):
+    if not re.fullmatch(r"[a-f0-9]{40,64}", token):
         print("Invalid token format")
-        print("Token must be 64 hexadecimal characters")
+        print("Token must be between 40 and 64 hexadecimal characters")
         return
 
     config = load_config()

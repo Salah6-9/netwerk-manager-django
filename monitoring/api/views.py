@@ -62,7 +62,7 @@ class MetricsIngestView(APIView):
         device.update_status()
 
         # check alerts
-        check_device_alerts(device, metric)
+        check_device_alerts(device)
 
         return Response({"status": "ok"})
 
