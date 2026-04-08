@@ -21,6 +21,8 @@ from . import views
 
 urlpatterns = [
 
+    path("", dashboard, name="index"),
+
     path("dashboard/", dashboard, name="dashboard"),
 
     path("trigger-scan/", views.trigger_scan, name="trigger_scan"),

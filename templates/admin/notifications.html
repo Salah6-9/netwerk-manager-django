@@ -2,155 +2,263 @@
 
 {% block content %}
 
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">Notifications Center</h1>
-    <div class="flex gap-2">
+<!-- ── HEADER ── -->
+<div
+    style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border-dim);">
+    <div class="panel-hd-l">
+        <svg class="ico" style="color:var(--accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+        <div>
+            <div
+                style="font-size:12px; font-weight:700; color:var(--text-1); letter-spacing:0.1em; text-transform:uppercase;">
+                Notifications</div>
+            <div style="font-size:9px; color:var(--text-3); letter-spacing:0.06em; text-transform:uppercase;">System
+                &amp; Support Alerts</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
         <form method="post" action="{% url 'mark_all_read' %}">
             {% csrf_token %}
             <button type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
-                Mark All as Read
+                style="display:inline-flex; align-items:center; gap:5px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; padding:5px 10px; border-radius:4px; border:1px solid var(--border); background:transparent; color:var(--text-2); cursor:pointer;">
+                <svg style="width:10px;height:10px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                Mark All Read
             </button>
         </form>
+        {% if is_admin %}
         <form method="post" action="{% url 'delete_all_notifications' %}"
-            onsubmit="return confirm('Are you sure you want to delete ALL notifications? This action cannot be undone.');">
+            onsubmit="return confirm('Delete ALL notifications? This cannot be undone.');">
             {% csrf_token %}
             <button type="submit"
-                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
-                Delete All Notifications
+                style="display:inline-flex; align-items:center; gap:5px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; padding:5px 10px; border-radius:4px; border:1px solid rgba(248,81,73,0.3); background:rgba(248,81,73,0.08); color:var(--red); cursor:pointer;">
+                <svg style="width:10px;height:10px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+                Delete All
             </button>
         </form>
+        {% endif %}
     </div>
 </div>
-<h1>System Alerts</h1>
 
-<hr>
-
+<!-- ── STAT CARDS (admin only) ── -->
 {% if is_admin %}
-
-<div style="display:flex;gap:20px;margin-bottom:20px">
-
-    <div style="border:1px solid #000000;padding:10px;width:200px">
-        <strong>Total Monitoring Alerts</strong><br>
-        {{ monitoring_alerts|length }}
+<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;">
+    <div class="stat-card">
+        <div class="sc-label">Total Alerts</div>
+        <div class="sc-num">{{ monitoring_alerts|length }}</div>
+        <div class="sc-bar">
+            <div class="sc-fill" style="width:100%; background:var(--border);"></div>
+        </div>
     </div>
-
-    <div style="border:1px solid #ccc;padding:10px;width:200px">
-        <strong>Active Alerts</strong><br>
-        {{ active_alerts }}
+    <div class="stat-card" style="border-color:rgba(248,81,73,0.16);">
+        <div class="sc-label" style="color:var(--red);">Active</div>
+        <div class="sc-num" style="color:var(--red);">{{ active_alerts }}</div>
+        <div class="sc-bar">
+            <div class="sc-fill"
+                style="width:{% widthratio active_alerts monitoring_alerts|length 100 %}%; background:var(--red);">
+            </div>
+        </div>
     </div>
-
-    <div style="border:1px solid #ccc;padding:10px;width:200px">
-        <strong>Resolved Alerts</strong><br>
-        {{ resolved_alerts }}
+    <div class="stat-card" style="border-color:rgba(63,185,80,0.16);">
+        <div class="sc-label" style="color:var(--green);">Resolved</div>
+        <div class="sc-num" style="color:var(--green);">{{ resolved_alerts }}</div>
+        <div class="sc-bar">
+            <div class="sc-fill"
+                style="width:{% widthratio resolved_alerts monitoring_alerts|length 100 %}%; background:var(--green);">
+            </div>
+        </div>
     </div>
-
-    <div style="border:1px solid #ccc;padding:10px;width:200px">
-        <strong>Support Notifications</strong><br>
-        {{ support_notifications|length }}
+    <div class="stat-card" style="border-color:rgba(88,166,255,0.16);">
+        <div class="sc-label" style="color:var(--accent);">Support</div>
+        <div class="sc-num" style="color:var(--accent);">{{ support_notifications|length }}</div>
+        <div class="sc-bar">
+            <div class="sc-fill" style="width:100%; background:var(--accent-dim);"></div>
+        </div>
     </div>
-
 </div>
 {% endif %}
-<hr>
 
+<!-- ── MONITORING ALERTS ── -->
+<div class="panel" style="margin-bottom:12px;">
+    <div class="panel-hd">
+        <div class="panel-hd-l">
+            <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <span class="ph-label">Monitoring Alerts</span>
+        </div>
+<span
+    style="font-size:9px; color:var(--text-3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.05em;">
+    {{ monitoring_alerts|default_if_none:''|length }} total
+</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Device</th>
+                    <th>Alert</th>
+                    <th>Status</th>
+                    {% if is_admin %}<th style="text-align:right;">Actions</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in monitoring_alerts %}
+                <tr>
+                    <td style="color:var(--text-3); font-size:10px; font-family:var(--font-mono); white-space:nowrap;">
+                        {{ alert.created_at|date:"d/m H:i" }}
+                    </td>
+                    <td>
+                        {% if alert.device %}
+                        <a href="{% url 'device_details' alert.device.id %}"
+                            style="color:var(--accent); font-size:11px;">
+                            {{ alert.device.hostname }}
+                        </a>
+                        {% else %}
+                        <span style="color:var(--text-3); font-size:11px;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            {% if not alert.is_read %}
+                            <span
+                                style="width:5px; height:5px; border-radius:50%; background:var(--accent); flex-shrink:0; display:inline-block;"></span>
+                            {% endif %}
+                            {% if alert.device %}
+                            <a href="{% url 'mark_notification_read' alert.id %}"
+                                style="color:var(--text-1); font-size:11px; {% if not alert.is_read %}font-weight:700;{% endif %}">
+                                {{ alert.title }}
+                            </a>
+                            {% else %}
+                            <span
+                                style="color:var(--text-1); font-size:11px; {% if not alert.is_read %}font-weight:700;{% endif %}">{{
+                                alert.title }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if alert.resolved %}
+                        <span class="badge bg"><span class="dot dg"></span>Resolved</span>
+                        {% else %}
+                        <span class="badge br"><span class="dot dr dp"></span>Active</span>
+                        {% endif %}
+                    </td>
+                    {% if is_admin %}
+                    <td style="text-align:right;">
+                        <div style="display:flex; gap:6px; justify-content:flex-end;">
+                            {% if not alert.resolved %}
+                            <form method="post" action="{% url 'resolve_notification' alert.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:3px 8px; border-radius:3px; border:1px solid rgba(63,185,80,0.3); background:rgba(63,185,80,0.08); color:var(--green); cursor:pointer;">Resolve</button>
+                            </form>
+                            {% endif %}
+                            <form method="post" action="{% url 'delete_notification' alert.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:3px 8px; border-radius:3px; border:1px solid rgba(248,81,73,0.3); background:rgba(248,81,73,0.08); color:var(--red); cursor:pointer;">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}5{% else %}4{% endif %}"
+                        style="text-align:center; padding:30px; color:var(--text-3);">
+                        No monitoring alerts
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-<h2>Monitoring Alerts</h2>
-
-<table border="1" width="100%">
-    <tr>
-        <th>Time</th>
-        <th>Device</th>
-        <th>Alert</th>
-        <th>Actions</th>
-    </tr>
-
-    {% for alert in monitoring_alerts %}
-    <tr class="{% if not alert.is_read %}bg-blue-50/30{% endif %}">
-        <td>{{ alert.created_at|date:"Y-m-d H:i" }}</td>
-        <td>
-            {% if alert.device %}
-            <a href="{% url 'device_details' alert.device.id %}" class="text-blue-600 hover:underline">
-                {{ alert.device.hostname }}
-            </a>
-            {% else %}
-            Unknown Device
-            {% endif %}
-        </td>
-        <td>
-            {% if alert.device %}
-            <a href="{% url 'mark_notification_read' alert.id %}" class="text-blue-600 hover:underline {% if not alert.is_read %}font-bold{% endif %}">
-                {{ alert.title }}
-            </a>
-            {% else %}
-            <span class="{% if not alert.is_read %}font-bold{% endif %}">{{ alert.title }}</span>
-            {% endif %}
-            {% if not alert.is_read %}
-            <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-1" title="Unread"></span>
-            {% endif %}
-        </td>
-        <td>
-            {%if is_admin%}
-            {% if not alert.resolved %}
-            <form method="post" action="{% url 'resolve_notification' alert.id %}">
-                {% csrf_token %}
-                <button class="text-green-600 hover:text-green-800">Resolve</button>
-            </form>
-            {% endif %}
-            <form method="post" action="{% url 'delete_notification' alert.id %}">
-                {% csrf_token %}
-                <button class="text-red-600 hover:text-red-800">Delete</button>
-            </form>
-            {%endif%}
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4" class="text-center py-4 text-gray-500">No monitoring alerts</td>
-    </tr>
-    {% endfor %}
-</table>
-
-<hr class="my-6">
-
-<h2 class="text-xl font-bold mb-4">Support Notifications</h2>
-
-<table border="0" width="100%" class="border-collapse border border-gray-300">
-    <tr class="bg-gray-200">
-        <th class="p-2 border">Time</th>
-        <th class="p-2 border">Message</th>
-        <th class="p-2 border">Actions</th>
-    </tr>
-
-    {% for n in support_notifications %}
-    <tr class="hover:bg-gray-50 {% if not n.is_read %}bg-blue-50/30{% endif %}">
-        <td class="p-2 border text-sm">{{ n.created_at|date:"Y-m-d H:i" }}</td>
-        <td class="p-2 border">
-            {% if n.ticket %}
-            <a href="{% url 'mark_notification_read' n.id %}" class="text-blue-600 hover:underline {% if not n.is_read %}font-bold{% endif %}">
-                {{ n.content }}
-            </a>
-            {% else %}
-            <span class="{% if not n.is_read %}font-bold{% endif %}">{{ n.content }}</span>
-            {% endif %}
-            {% if not n.is_read %}
-            <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-1" title="Unread"></span>
-            {% endif %}
-        </td>
-        <td class="p-2 border">
-            {%if is_admin%}
-            <form method="post" action="{% url 'delete_notification' n.id %}">
-                {% csrf_token %}
-                <button class="text-red-600 hover:text-red-800">Delete</button>
-            </form>
-            {%endif%}
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="3" class="text-center py-4 text-gray-500 text-sm">No support notifications</td>
-    </tr>
-    {% endfor %}
-</table>
+<!-- ── SUPPORT NOTIFICATIONS ── -->
+<div class="panel">
+    <div class="panel-hd">
+        <div class="panel-hd-l">
+            <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+            </svg>
+            <span class="ph-label">Support Notifications</span>
+        </div>
+        <span
+    style="font-size:9px; color:var(--text-3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.05em;">
+    {% if support_notifications %}
+        {{ support_notifications|length }} total
+    {% else %}
+        0 total
+    {% endif %}
+</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Message</th>
+                    {% if is_admin %}<th style="text-align:right;">Actions</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in support_notifications %}
+                <tr>
+                    <td style="color:var(--text-3); font-size:10px; font-family:var(--font-mono); white-space:nowrap;">
+                        {{ n.created_at|date:"d/m H:i" }}
+                    </td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            {% if not n.is_read %}
+                            <span
+                                style="width:5px; height:5px; border-radius:50%; background:var(--accent); flex-shrink:0; display:inline-block;"></span>
+                            {% endif %}
+                            {% if n.ticket %}
+                            <a href="{% url 'mark_notification_read' n.id %}"
+                                style="color:var(--text-1); font-size:11px; {% if not n.is_read %}font-weight:700;{% endif %}">
+                                {{ n.content }}
+                            </a>
+                            {% else %}
+                            <span
+                                style="color:var(--text-1); font-size:11px; {% if not n.is_read %}font-weight:700;{% endif %}">{{
+                                n.content }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    {% if is_admin %}
+                    <td style="text-align:right;">
+                        <form method="post" action="{% url 'delete_notification' n.id %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:3px 8px; border-radius:3px; border:1px solid rgba(248,81,73,0.3); background:rgba(248,81,73,0.08); color:var(--red); cursor:pointer;">Delete</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}3{% else %}2{% endif %}"
+                        style="text-align:center; padding:30px; color:var(--text-3);">
+                        No support notifications
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}

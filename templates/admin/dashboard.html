@@ -211,29 +211,57 @@
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for host in discovered_devices %}
-                        <tr>
-                            <td style="color:var(--text-1); font-variant-numeric:tabular-nums;">{{ host.ip }}</td>
-                            <td style="color:var(--text-3); font-size:11px;">{{ host.mac }}</td>
-                            <td>
-                                {% if host.device %}<span class="badge bb">Registered</span>{% else %}<span
-                                    class="badge bd">Unknown</span>{% endif %}
-                            </td>
-                            <td>
-                                {% if host.status == "online" %}<span class="badge bg"><span class="dot dg"></span>{{
-                                    host.status }}</span>{% elif host.status == "offline" %}<span class="badge br"><span
-                                        class="dot dr"></span>{{ host.status }}</span>{% else %}<span
-                                    class="badge bd"><span class="dot dd"></span>{{ host.status }}</span>{% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" style="padding:28px; text-align:center; color:var(--text-3);">No discovered
-                                devices from last scan.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                   <tbody>
+    {% for host in discovered_devices %}
+    <tr>
+        <td style="color:var(--text-1); font-variant-numeric:tabular-nums;">
+            {{ host.ip }}
+        </td>
+
+        <td style="color:var(--text-3); font-size:11px;">
+            {{ host.mac }}
+        </td>
+
+        <td>
+            {% if host.device %}
+                <span class="badge bb">Registered</span>
+            {% else %}
+                <span class="badge bd">Unknown</span>
+            {% endif %}
+        </td>
+
+        <td>
+            {% with status=host.status|default_if_none:""|lower %}
+                
+                {% if status == "online" or status == "up" %}
+                    <span class="badge bg">
+                        <span class="dot dg"></span>Online
+                    </span>
+
+                {% elif status == "offline" or status == "down" %}
+                    <span class="badge br">
+                        <span class="dot dr"></span>Offline
+                    </span>
+
+                {% else %}
+                    <span class="badge bd">
+                        <span class="dot dd"></span>{{ host.status|default:"Unknown" }}
+                    </span>
+                    
+                {% endif %}
+
+            {% endwith %}
+        </td>
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="4" style="padding:28px; text-align:center; color:var(--text-3);">
+            No discovered devices from last scan.
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
                 </table>
             </div>
         </div>

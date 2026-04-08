@@ -65,6 +65,7 @@ def notifications_center(request):
         "support_notifications": support_notifications,
         "active_alerts": active_alerts,
         "resolved_alerts": resolved_alerts,
+        "total_alerts": monitoring_alerts.count(),
         "is_admin": is_admin(request.user)
     }
 
