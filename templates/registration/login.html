@@ -7,17 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول | Network Manager</title>
 
-    <!-- Google Fonts: Inter & JetBrains Mono for tech feel -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
 
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="{% static 'vendor/alpine/alpine.min.js' %}"></script>
 
-    <!-- Tailwind CSS (via output.css or CDN for safety if build is missing) -->
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         body {
