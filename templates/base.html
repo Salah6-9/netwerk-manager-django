@@ -7,9 +7,9 @@
     <title>Network Manager :: NOC</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://unpkg.com/alpinejs" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+    <script src="{% static 'vendor/alpine/alpine.min.js' %}" defer></script>
+    <script src="{% static 'vendor/chartjs/chart.min.js' %}"></script>
     <style>
         :root {
             --bg-base: #0d1117;
@@ -230,10 +230,9 @@
             font-size: 11px;
             font-weight: 600;
             color: var(--text-1);
-            truncate: true;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .user-role {
@@ -352,7 +351,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            ring: 2px solid var(--bg-panel);
+            box-shadow: 0 0 0 2px var(--bg-panel);
             outline: 2px solid var(--bg-panel);
             line-height: 1;
         }
