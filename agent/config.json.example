@@ -1,6 +1,0 @@
-{
-    "api_url": "http://127.0.0.1:8000",
-    "interval": 60,
-    "user_token": "YOUR_USER_TOKEN_HERE",
-    "agent_token": "AUTOMATICALLY_GENERATED"
-}

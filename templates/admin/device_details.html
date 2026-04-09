@@ -6,20 +6,21 @@
 <div
     style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid var(--border-dim);">
     <div style="display:flex; align-items:center; gap:12px;">
-<div class="avatar" style="width:36px; height:36px; font-size:14px;">
-    {% if device.hostname %}
-        {{ device.hostname|first|upper }}
-    {% else %}
-        ?
-    {% endif %}
-</div>        <div>
+        <div class="avatar" style="width:36px; height:36px; font-size:14px;">
+            {% if device.hostname %}
+            {{ device.hostname|first|upper }}
+            {% else %}
+            ?
+            {% endif %}
+        </div>
+        <div>
             <div style="font-size:14px; font-weight:700; color:var(--text-1); letter-spacing:0.02em;">
-    {% if device.hostname %}
-        {{ device.hostname }}
-    {% else %}
-        Unnamed Device
-    {% endif %}
-</div>
+                {% if device.hostname %}
+                {{ device.hostname }}
+                {% else %}
+                Unnamed Device
+                {% endif %}
+            </div>
             <div
                 style="font-size:10px; color:var(--text-3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.05em;">
                 UID: {{ device.id }} • {{ device.os|default:"Generic OS" }}
@@ -166,13 +167,13 @@
                             <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.disk_usage }}%</td>
                             <td style="font-family:var(--font-mono); color:var(--text-1);">{{ m.cpu_temperature }}°C
                             </td>
-<td style="text-align:right; color:var(--text-3); font-size:10px;">
-    {% if m.timestamp %}
-        {{ m.timestamp|date:"H:i:s" }}
-    {% else %}
-        —
-    {% endif %}
-</td>
+                            <td style="text-align:right; color:var(--text-3); font-size:10px;">
+                                {% if m.timestamp %}
+                                {{ m.timestamp|date:"H:i:s" }}
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -217,32 +218,32 @@
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
-    <span
-        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
-        IP
-    </span>
-    <span style="font-family:var(--font-mono); color:var(--text-1); font-size:11px;">
-        {% if device.ip %}
-            {{ device.ip }}
-        {% else %}
-            —
-        {% endif %}
-    </span>
-</div>
+                    <span
+                        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
+                        IP
+                    </span>
+                    <span style="font-family:var(--font-mono); color:var(--text-1); font-size:11px;">
+                        {% if device.ip %}
+                        {{ device.ip }}
+                        {% else %}
+                        —
+                        {% endif %}
+                    </span>
+                </div>
 
-<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
-    <span
-        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
-        MAC
-    </span>
-    <span style="font-family:var(--font-mono); color:var(--text-3); font-size:9px;">
-        {% if device.mac %}
-            {{ device.mac }}
-        {% else %}
-            —
-        {% endif %}
-    </span>
-</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
+                    <span
+                        style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
+                        MAC
+                    </span>
+                    <span style="font-family:var(--font-mono); color:var(--text-3); font-size:9px;">
+                        {% if device.mac %}
+                        {{ device.mac }}
+                        {% else %}
+                        —
+                        {% endif %}
+                    </span>
+                </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
                     <span
                         style="font-size:9px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Office</span>
@@ -259,32 +260,32 @@
                 <div
                     style="border-top:1px solid var(--border-dim); padding-top:10px; margin-top:4px; display:flex; flex-direction:column; gap:6px;">
                     <div style="display:flex; justify-content:space-between;">
-    <span
-        style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
-        Last Heartbeat
-    </span>
-    <span style="font-family:var(--font-mono); font-size:9px; color:var(--text-3);">
-        {% if device.last_agent_heartbeat %}
-            {{ device.last_agent_heartbeat|date:"d/m H:i" }}
-        {% else %}
-            —
-        {% endif %}
-    </span>
-</div>
+                        <span
+                            style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
+                            Last Heartbeat
+                        </span>
+                        <span style="font-family:var(--font-mono); font-size:9px; color:var(--text-3);">
+                            {% if device.last_agent_heartbeat %}
+                            {{ device.last_agent_heartbeat|date:"d/m H:i" }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </span>
+                    </div>
 
-<div style="display:flex; justify-content:space-between;">
-    <span
-        style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
-        Last Scan
-    </span>
-    <span style="font-family:var(--font-mono); font-size:9px; color:var(--text-3);">
-        {% if device.last_scan_seen %}
-            {{ device.last_scan_seen|date:"d/m H:i" }}
-        {% else %}
-            —
-        {% endif %}
-    </span>
-</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span
+                            style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
+                            Last Scan
+                        </span>
+                        <span style="font-family:var(--font-mono); font-size:9px; color:var(--text-3);">
+                            {% if device.last_scan_seen %}
+                            {{ device.last_scan_seen|date:"d/m H:i" }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </span>
+                    </div>
                 </div>
 
             </div>
@@ -310,12 +311,12 @@
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div style="font-size:11px; font-weight:600; color:#f85149; margin-bottom:2px;">
-    {% if alert.title %}
-        {{ alert.title }}
-    {% else %}
-        Untitled Alert
-    {% endif %}
-</div>
+                            {% if alert.title %}
+                            {{ alert.title }}
+                            {% else %}
+                            Untitled Alert
+                            {% endif %}
+                        </div>
                         <div
                             style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">
                             {{ alert.created_at|timesince }} ago</div>
@@ -416,13 +417,18 @@
     }
 
     function fetchMetrics() {
-        fetch("/api/device-metrics/{{ device.id }}/?range_minutes=60")
+        // Use 24h as the fetch range to match the server side
+        fetch("/api/device-metrics/{{ device.id }}/?range_minutes=1440")
             .then(r => r.json())
             .then(data => renderCharts(data))
             .catch(err => console.warn("Metrics fetch failed:", err));
     }
 
-    fetchMetrics();
+    // Bootstrap with initial data from Django context
+    const initialData = {{ initial_data| safe }};
+    renderCharts(initialData);
+
+    // Continue with periodic updates
     setInterval(fetchMetrics, 20000);
 </script>
 

@@ -88,44 +88,6 @@
         {% include "partials/dashboard_cards.html" %}
     </div>
 
-    <!-- ── OVERVIEW STAT CARDS ── -->
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0;">
-        <div class="stat-card">
-            <div class="sc-label">Total Devices</div>
-            <div class="sc-num">{{ total_devices }}</div>
-            <div class="sc-bar">
-                <div class="sc-fill" style="width:100%; background:var(--border);"></div>
-            </div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(63,185,80,0.16);">
-            <div class="sc-label" style="color:var(--green);">Online</div>
-            <div class="sc-num" style="color:var(--green);">{{ total_online_devices }}</div>
-            <div class="sc-bar">
-                <div class="sc-fill"
-                    style="width:{% widthratio total_online_devices total_devices 100 %}%; background:var(--green);">
-                </div>
-            </div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(248,81,73,0.16);">
-            <div class="sc-label" style="color:var(--red);">Offline</div>
-            <div class="sc-num" style="color:var(--red);">{{ total_offline_devices }}</div>
-            <div class="sc-bar">
-                <div class="sc-fill"
-                    style="width:{% widthratio total_offline_devices total_devices 100 %}%; background:var(--red);">
-                </div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="sc-label">Unknown</div>
-            <div class="sc-num" style="color:var(--text-2);">{{ total_unknown_devices }}</div>
-            <div class="sc-bar">
-                <div class="sc-fill"
-                    style="width:{% widthratio total_unknown_devices total_devices 100 %}%; background:var(--text-3);">
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- ── REGISTERED DEVICES ── -->
     <div class="panel" style="margin-bottom:10px;">
         <div class="panel-hd">
@@ -137,10 +99,10 @@
                 <span class="ph-label">Registered Devices</span>
             </div>
             <div style="display:flex; gap:4px;">
-                <button class="fb" :class="devicesFilter==='all'?'fb-all':''" @click="devicesFilter='all'">All</button>
-                <button class="fb" :class="devicesFilter==='online'?'fb-online':''"
+                <button class="fb" :class="devicesFilter == 'all'?'fb-all':''" @click="devicesFilter='all'">All</button>
+                <button class="fb" :class="devicesFilter == 'online'?'fb-online':''"
                     @click="devicesFilter='online'">Online</button>
-                <button class="fb" :class="devicesFilter==='offline'?'fb-offline':''"
+                <button class="fb" :class="devicesFilter == 'offline'?'fb-offline':''"
                     @click="devicesFilter='offline'">Offline</button>
             </div>
         </div>
@@ -159,7 +121,7 @@
                     {% for device in devices %}
                     <tr {% if device.status == 'online' %}x-show="devicesFilter==='all'||devicesFilter==='online'" {% elif
                         device.status == 'offline' %}x-show="devicesFilter==='all'||devicesFilter==='offline'" {% else
-                        %}x-show="devicesFilter==='all'" {% endif %}>
+                        %}x-show="devicesFilter  == 'all'" {% endif %}>
                         <td>
                             <div style="display:flex; align-items:center; gap:7px;">
                                 <div class="avatar">{{ device.user.username|first }}</div>
@@ -211,57 +173,57 @@
                             <th>Status</th>
                         </tr>
                     </thead>
-                   <tbody>
-    {% for host in discovered_devices %}
-    <tr>
-        <td style="color:var(--text-1); font-variant-numeric:tabular-nums;">
-            {{ host.ip }}
-        </td>
+                    <tbody>
+                        {% for host in discovered_devices %}
+                        <tr>
+                            <td style="color:var(--text-1); font-variant-numeric:tabular-nums;">
+                                {{ host.ip }}
+                            </td>
 
-        <td style="color:var(--text-3); font-size:11px;">
-            {{ host.mac }}
-        </td>
+                            <td style="color:var(--text-3); font-size:11px;">
+                                {{ host.mac }}
+                            </td>
 
-        <td>
-            {% if host.device %}
-                <span class="badge bb">Registered</span>
-            {% else %}
-                <span class="badge bd">Unknown</span>
-            {% endif %}
-        </td>
+                            <td>
+                                {% if host.device %}
+                                <span class="badge bb">Registered</span>
+                                {% else %}
+                                <span class="badge bd">Unknown</span>
+                                {% endif %}
+                            </td>
 
-        <td>
-            {% with status=host.status|default_if_none:""|lower %}
-                
-                {% if status == "online" or status == "up" %}
-                    <span class="badge bg">
-                        <span class="dot dg"></span>Online
-                    </span>
+                            <td>
+                                {% with status=host.status|default_if_none:""|lower %}
 
-                {% elif status == "offline" or status == "down" %}
-                    <span class="badge br">
-                        <span class="dot dr"></span>Offline
-                    </span>
+                                {% if status == "online" or status == "up" %}
+                                <span class="badge bg">
+                                    <span class="dot dg"></span>Online
+                                </span>
 
-                {% else %}
-                    <span class="badge bd">
-                        <span class="dot dd"></span>{{ host.status|default:"Unknown" }}
-                    </span>
-                    
-                {% endif %}
+                                {% elif status == "offline" or status == "down" %}
+                                <span class="badge br">
+                                    <span class="dot dr"></span>Offline
+                                </span>
 
-            {% endwith %}
-        </td>
-    </tr>
+                                {% else %}
+                                <span class="badge bd">
+                                    <span class="dot dd"></span>{{ host.status|default:"Unknown" }}
+                                </span>
 
-    {% empty %}
-    <tr>
-        <td colspan="4" style="padding:28px; text-align:center; color:var(--text-3);">
-            No discovered devices from last scan.
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
+                                {% endif %}
+
+                                {% endwith %}
+                            </td>
+                        </tr>
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="padding:28px; text-align:center; color:var(--text-3);">
+                                No discovered devices from last scan.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
         </div>
