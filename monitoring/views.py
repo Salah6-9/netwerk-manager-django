@@ -22,7 +22,7 @@ def device_metrics_api(request, device_id):
     if not request.user.is_staff and device.user != request.user:
         return JsonResponse({"error": "Forbidden"}, status=403)
 
-    range_minutes = int(request.GET.get("range_minutes", 30))
+    range_minutes = int(request.GET.get("range_minutes", 1440))
     since = timezone.now() - timedelta(minutes=range_minutes)
 
     metrics = (

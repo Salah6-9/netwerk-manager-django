@@ -121,26 +121,27 @@ def device_details(request, pk):
         device=device,
         timestamp__gte=timezone.now() - timedelta(hours=24)
     ).order_by("timestamp")
-    metrics = list(reversed(metrics))
-    time_data = [m.timestamp.strftime("%H:%M:%S") for m in metrics]
-    cpu_data = [m.cpu_usage or 0 for m in metrics]
-    ram_data = [m.ram_usage or 0 for m in metrics]
-    disk_data = [m.disk_usage or 0 for m in metrics]
-    temp_data = [m.cpu_temperature or 0 for m in metrics]
+    
+    # We need newest-first for the table, but chronological for the charts
+    table_metrics = list(reversed(metrics))[:15]
+    
     alerts = Notification.objects.filter(
         to_user=request.user,
         type="system"
     ).order_by("-created_at")[:10]
+
     context = {
         "device": device,
         "status": status,
-        "metrics": metrics,
+        "metrics": table_metrics,
         "user_token" : user_token.key,
-        "time_data": json.dumps(time_data),
-        "cpu_data": json.dumps(cpu_data),
-        "ram_data": json.dumps(ram_data),
-        "disk_data": json.dumps(disk_data),
-        "temp_data": json.dumps(temp_data),
+        "initial_data": json.dumps({
+            "timestamps": [m.timestamp.strftime("%H:%M:%S") for m in metrics],
+            "cpu": [m.cpu_usage or 0 for m in metrics],
+            "ram": [m.ram_usage or 0 for m in metrics],
+            "disk": [m.disk_usage or 0 for m in metrics],
+            "temperature": [m.cpu_temperature or 0 for m in metrics],
+        }),
         "alerts": alerts,
     }
     return render(request, "admin/device_details.html", context)
@@ -197,32 +198,12 @@ def dashboard(request):
         discovered_devices = ScanLog.objects.filter(scan_run=latest_scan)
 
     if admin:
-
-        scan_running = ScanRun.objects.filter(
-            status="running",
-            finished_at__isnull=True
-        ).exists()
-
+        scan_running = ScanRun.objects.filter(status="running", finished_at__isnull=True).exists()
         devices = Device.objects.all()
-
         template = "admin/dashboard.html"
-
     else:
-
         scan_running = False
         devices = Device.objects.filter(user=request.user)
-        device_status = []
-        for device in devices:
-            status =  DeviceStatus.objects.filter(device=device).first()
-            device_status.append(
-                {
-                    "device": device,
-                    "status": status,
-                }
-            )
-        context = {
-            "device_status": device_status,
-        }
         template = "employee/dashboard.html"
 
     context = {
@@ -234,7 +215,15 @@ def dashboard(request):
         "total_online_devices": total_online_devices,
         "total_offline_devices": total_offline_devices,
         "total_unknown_devices": total_unknown_devices,
+        "total_notifications": Notification.objects.filter(resolved=False).count(),
     }
+
+
+    if not admin:
+        context.update({
+            "online_count": devices.filter(status="online").count(),
+            "offline_count": devices.filter(status="offline").count(),
+        })
 
     return render(request, template, context)
 
@@ -286,7 +275,7 @@ def dashboard_stats(request):
         "total_online_devices": Device.objects.filter(status="online").count(),
         "total_offline_devices": Device.objects.filter(status="offline").count(),
         "total_unknown_devices": Device.objects.filter(status="unknown").count(),
-        "notifications": Notification.objects.filter(resolved=False).count(),
+        "total_notifications": Notification.objects.filter(resolved=False).count(),
     }
     return render(request, "partials/dashboard_cards.html", context)
 

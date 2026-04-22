@@ -1,0 +1,6 @@
+{
+    "api_url": "http://127.0.0.1:8000",
+    "interval": 60,
+    "user_token": "8a833b1c4a00de85cfe8420539e267d0ba1dc2aa",
+    "agent_token": "a5f76d9ed5c5d761df8a7bb5a83076686c17e7eb8e1de9a62396393bab9967e2"
+}

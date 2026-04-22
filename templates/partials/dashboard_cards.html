@@ -1,44 +1,43 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-
-    <!-- Total Assets -->
+    <!-- Total Devices -->
     <div class="stat-card">
-        <p class="sc-label">Total Assets</p>
+        <p class="sc-label">Total Devices</p>
         <p class="sc-num">{{ total_devices }}</p>
         <div class="sc-bar">
             <div class="sc-fill" style="width:100%; background:var(--border-dim);"></div>
         </div>
     </div>
 
-    <!-- Live Online -->
+    <!-- Online -->
     <div class="stat-card" style="border-color: var(--green-dim);">
-        <p class="sc-label" style="color: var(--green);">Live Online</p>
+        <p class="sc-label" style="color: var(--green);">Online</p>
         <div class="flex items-center gap-2">
-            <p class="sc-num" style="color: var(--green);">{{ online_devices }}</p>
+            <p class="sc-num" style="color: var(--green);">{{ total_online_devices }}</p>
             <span class="dot dg dp"></span>
         </div>
         <div class="sc-bar">
             <div class="sc-fill"
-                style="width: {% widthratio online_devices total_devices 100 %}%; background: var(--green);"></div>
+                style="width: {% widthratio total_online_devices total_devices 100 %}%; background: var(--green);">
+            </div>
         </div>
     </div>
 
-    <!-- Offline / Down -->
+    <!-- Offline -->
     <div class="stat-card" style="border-color: var(--red-dim);">
-        <p class="sc-label" style="color: var(--red);">Offline / Down</p>
-        <p class="sc-num" style="color: var(--red);">{{ offline_devices }}</p>
+        <p class="sc-label" style="color: var(--red);">Offline</p>
+        <p class="sc-num" style="color: var(--red);">{{ total_offline_devices }}</p>
         <div class="sc-bar">
             <div class="sc-fill"
-                style="width: {% widthratio offline_devices total_devices 100 %}%; background: var(--red);"></div>
+                style="width: {% widthratio total_offline_devices total_devices 100 %}%; background: var(--red);"></div>
         </div>
     </div>
 
     <!-- Active Alerts -->
     <div class="stat-card cursor-pointer" style="border-color: var(--yellow-dim);">
         <p class="sc-label" style="color: var(--yellow);">Active Alerts</p>
-        <p class="sc-num" style="color: var(--yellow);">{{ active_alerts }}</p>
+        <p class="sc-num" style="color: var(--yellow);">{{ total_notifications }}</p>
         <div class="sc-bar">
             <div class="sc-fill" style="width: 100%; background: var(--yellow); opacity: 0.2;"></div>
         </div>
     </div>
-
 </div>

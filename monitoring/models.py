@@ -22,7 +22,7 @@ class ScanLog(models.Model):
     )
 
     ip = models.GenericIPAddressField(null=True, blank=True)
-    mac = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    mac = models.CharField(max_length=100, null=True, blank=True)
 
     timestamp = models.DateTimeField(auto_now_add=True)
 
