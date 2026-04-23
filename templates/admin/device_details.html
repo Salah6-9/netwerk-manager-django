@@ -394,6 +394,8 @@
     }
 
     function renderCharts(data) {
+        // If labels are just HH:MM and we have multiple days, it gets confusing.
+        // But for now let's just use what the server sends.
         buildChart("cpuChart", "#58a6ff", data.timestamps, data.cpu);
         buildChart("ramChart", "#3fb950", data.timestamps, data.ram);
         buildChart("diskChart", "#f1e05a", data.timestamps, data.disk);
@@ -417,8 +419,8 @@
     }
 
     function fetchMetrics() {
-        // Use 24h as the fetch range to match the server side
-        fetch("/api/device-metrics/{{ device.id }}/?range_minutes=1440")
+        // Use 7 days as the fetch range
+        fetch("/api/device-metrics/{{ device.id }}/?range_minutes=10080")
             .then(r => r.json())
             .then(data => renderCharts(data))
             .catch(err => console.warn("Metrics fetch failed:", err));
