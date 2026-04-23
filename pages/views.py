@@ -119,7 +119,7 @@ def device_details(request, pk):
     user_token = Token.objects.get(user=device.user)
     metrics = DeviceMetric.objects.filter(
         device=device,
-        timestamp__gte=timezone.now() - timedelta(hours=24)
+        timestamp__gte=timezone.now() - timedelta(days=7)
     ).order_by("timestamp")
     
     # We need newest-first for the table, but chronological for the charts
@@ -136,7 +136,7 @@ def device_details(request, pk):
         "metrics": table_metrics,
         "user_token" : user_token.key,
         "initial_data": json.dumps({
-            "timestamps": [m.timestamp.strftime("%H:%M:%S") for m in metrics],
+            "timestamps": [m.timestamp.strftime("%d/%m %H:%M") for m in metrics],
             "cpu": [m.cpu_usage or 0 for m in metrics],
             "ram": [m.ram_usage or 0 for m in metrics],
             "disk": [m.disk_usage or 0 for m in metrics],
